@@ -9,6 +9,9 @@
 # Modified by Jason Leonard				#
 # 	E-mail: jason_leonard@yahoo.com			#
 #							#
+# Modified by Alexander Boström				#
+# 	E-mail: abo@kth.se               		#
+#							#
 #							#
 # Overview						#
 # ----------------------------------------------------	#
@@ -657,7 +660,7 @@ function CheckInputVoltage(){
 
 	VOLTAGE_STATE=$STATE_OK
 
-	if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
+	if [[ -z "$WARNING" || -z "$CRITICAL" ]]; then
 		echo "No WARNING or CRITICAL value specified!"
 		print_usage
 		exit $STATE_UNK
