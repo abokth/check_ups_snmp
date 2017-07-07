@@ -50,8 +50,8 @@
 #		GLOBAL VARIABLES			#
 #########################################################
 APPNAME=`basename $0`
-VERSION="Version 1.5"
-AUTHOR="Jason Leonard (jason_leonard@yahoo.com)"
+VERSION="Version 1.5.1"
+AUTHOR="Alexander Boström (abo@kth.se)"
 
 # Default settings for connection
 COMMUNITY='public'
