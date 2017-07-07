@@ -4,7 +4,6 @@
 #		SNMP UPS Check				#
 #							#
 # check_ups_snmp					#
-# 	Version 1.5 (June 6th, 2016)			#
 #							#
 # Modified by Jason Leonard				#
 # 	E-mail: jason_leonard@yahoo.com			#
@@ -41,21 +40,9 @@
 #########################################################
 
 #########################################################
-#		   CHANGE LOG				#
-#########################################################
 #							#
-# V1.5:	Modified code to my preferences for syntax,	#
-#	variable names, function names, etc.		#
-#	Made countless corrections to logic for	error	#
-# 	handling and configured to handle SNMP v3	#
-#	checking.					#
-#							#
-# V1.0:	Include new parameter to select SNMP version	#
-#	(1 or 2c)					#
-#							#
-# V0.2:	Fix UNKNOWN state when warning value was the	#
-#	same as current temperature on UPS.  		#
-#	Thanks	to puckel for the help!			#
+# See https://github.com/abokth/check_ups_snmp for      #
+# history, the latest version and contact info.         #
 #							#
 #########################################################
 
