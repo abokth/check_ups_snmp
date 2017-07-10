@@ -39,9 +39,8 @@
 #							#
 #########################################################
 
-#########################################################
-#		GLOBAL VARIABLES			#
-#########################################################
+## Constants ##
+
 APPNAME=`basename $0`
 
 HOMEPAGE="https://github.com/abokth/check_ups_snmp"
@@ -70,9 +69,6 @@ PERFDATA=""
 # SEPARATOR="\n"
 SEPARATOR=","
 
-#########################################################
-#			print_version			#
-#########################################################
 print_version() {
 
     echo "$APPNAME $HOMEPAGE"
@@ -81,9 +77,6 @@ print_version() {
 	
 }
 
-#########################################################
-#			print_usage			#
-#########################################################
 print_usage(){
 
 	echo ''
@@ -96,9 +89,6 @@ print_usage(){
 	
 }
 
-#########################################################
-#			print_help			#
-#########################################################
 print_help(){
 
 	print_version
@@ -207,9 +197,8 @@ print_help(){
 	
 }
 
-#########################################################
-#		Universal SNMP OIDS for UPS		#
-#########################################################
+## Universal SNMP OIDS for UPS ##
+
 #Add check for Battery (Model / Needs Replaced?)
 #---> integrate this with "Status"
 
@@ -362,9 +351,6 @@ OID_iemStatusProbeCurrentTemp='1.3.6.1.4.1.318.1.1.10.2.3.2.1.4.1'
 OID_iemStatusProbeCurrentHumid='1.3.6.1.4.1.318.1.1.10.2.3.2.1.6.1'
 
 
-#########################################################
-#		Subroutine: CheckAssetInfo		#
-#########################################################
 CheckAssetInfo(){
 
 	MAKE=`get_snmp $OID_upsIdentManufacturer`
@@ -393,9 +379,6 @@ CheckAssetInfo(){
 	
 }
 
-#########################################################
-#			Function: CheckSelfTest		#
-#########################################################
 function CheckSelfTest(){
 	TEST_STATE=$STATE_OK
 
@@ -425,9 +408,6 @@ function CheckSelfTest(){
 	
 }
 
-#########################################################
-#		Subroutine: CheckInputLines		#
-#########################################################
 CheckInputLines(){
 
 	NUMBER_LINES=`get_snmp $OID_upsInputNumLines`
@@ -438,9 +418,6 @@ CheckInputLines(){
 	
 }
 
-#########################################################
-#		Subroutine: CheckOutputLines		#
-#########################################################
 CheckOutputLines(){
 
 	NUMBER_LINES=`get_snmp $OID_upsOutputNumLines`
@@ -451,9 +428,6 @@ CheckOutputLines(){
 	
 }
 
-#########################################################
-#		Function: ups_alarm			#
-#########################################################
 function CheckUPSAlarm(){
 
 	ALARM_STATE=$STATE_OK
@@ -499,9 +473,6 @@ function CheckUPSAlarm(){
 	
 }
 
-#########################################################
-#	  Function: CheckAmbientTemp			#
-#########################################################
 function CheckAmbientTemp(){
 
 	TEMP_STATE=$STATE_OK
@@ -539,9 +510,6 @@ function CheckAmbientTemp(){
 	
 }
 
-#########################################################
-#	  Function: CheckBatteryTemp			#
-#########################################################
 function CheckBatteryTemp(){
 
 	BATTERY_STATE=$STATE_OK
@@ -573,9 +541,6 @@ function CheckBatteryTemp(){
 	
 }
 
-#########################################################
-#		Function: CheckOutputLoad			#
-#########################################################
 function CheckOutputLoad(){
 
 	LOAD_STATE=$STATE_OK
@@ -640,9 +605,6 @@ function CheckOutputLoad(){
 	
 }
 
-#########################################################
-#		Function: CheckInputVoltage		#
-#########################################################
 function CheckInputVoltage(){
 
 	VOLTAGE_STATE=$STATE_OK
@@ -720,9 +682,6 @@ function CheckInputVoltage(){
 	
 }
 
-#########################################################
-#		Function: CheckBatteryStatus		#
-#########################################################
 function CheckBatteryStatus(){
 
 	BATTERY_STATE=$STATE_OK
@@ -750,9 +709,6 @@ function CheckBatteryStatus(){
 
 }
 
-#########################################################
-#	Function: CheckBatteryCharge			#
-#########################################################
 function CheckBatteryCharge(){
 
 	BATTERY_STATE=$STATE_OK
@@ -788,9 +744,6 @@ function CheckBatteryCharge(){
 
 }
 
-#########################################################
-#		Subroutine: walk_snmp			#
-#########################################################
 walk_snmp(){
 
 	if [ $2 = true ]; then
@@ -822,9 +775,6 @@ walk_snmp(){
 	
 }
 
-#########################################################
-#		Subroutine: get_snmp			#
-#########################################################
 get_snmp(){
 
 	if [[ $SNMPVERSION = 3 ]]; then
@@ -846,11 +796,7 @@ get_snmp(){
 	
 }
 
-#########################################################
-#		Subroutine: check_snmp_error			#
-#########################################################
 # Tests errors returned by function operations		#
-#########################################################
 check_snmp_error(){
 
 	 if [[ $1 -ne 0 ]]; then
@@ -860,9 +806,7 @@ check_snmp_error(){
 	
 }
 
-#########################################################
-#		MAIN PROGRAM CODE			#
-#########################################################
+## MAIN PROGRAM CODE ##
 
 # Check that all required binaries for the script are available
 # 	EXIT with an UNKNOWN status if not
