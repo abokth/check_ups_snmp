@@ -717,35 +717,6 @@ function CheckBatteryCharge(){
 	return $BATTERY_STATE
 }
 
-walk_snmp(){
-	if [ $2 = true ]; then
-		OUTPUT_OPTIONS="-Oavq"
-	else
-		OUTPUT_OPTIONS="-Oa"		 
-	fi
-		
-	if [[ $SNMPVERSION = 3 ]]; then
-		RESULT_TEXT=$(snmpwalk -v $SNMPVERSION $OUTPUT_OPTIONS -u $SNMPUSER -l $PRIVILEGELEVEL -x $PRIVACYPROTOCOL -X $PRIVACYPASSWORD -a $AUTHPROTOCOL -A $AUTHPASSWORD $HOST_NAME $1)
-		RESULT_CODE=$?
-	else
-		# Check if community was also set
-		RESULT_TEXT=$(snmpwalk -v $SNMPVERSION $OUTPUT_OPTIONS -c $COMMUNITY $HOST_NAME $1)
-		RESULT_CODE=$?
-	fi
-
-	if [[ $RESULT_CODE -ne 0 ]]; then
-		echo "Plugin $APPNAME failure - snmpwalk command error."
-		echo "$RESULT_TEXT"
-		exit $STATE_UNK
-	fi
-
-	if [ $2 = true ]; then
-		echo "$RESULT_TEXT" | sed -e 's/^[[:space:]]*//' | tr -d "\""
-	else
-		echo "$RESULT_TEXT" 
-	fi
-}
-
 get_snmp(){
 	if [[ $SNMPVERSION = 3 ]]; then
 		RESULT_TEXT=$(snmpget -v $SNMPVERSION -Oavq -u $SNMPUSER -l $PRIVILEGELEVEL -x $PRIVACYPROTOCOL -X $PRIVACYPASSWORD -a $AUTHPROTOCOL -A $AUTHPASSWORD $HOST_NAME $1)
@@ -777,7 +748,7 @@ check_snmp_error(){
 
 # Check that all required binaries for the script are available
 # 	EXIT with an UNKNOWN status if not
-binaries="snmpwalk snmpget snmptranslate tr awk expr"
+binaries="snmpget snmptranslate tr awk"
 
 for required_binary in $binaries; do
 	which $required_binary > /dev/null
