@@ -445,7 +445,7 @@ function CheckUPSAlarm(){
 			# work on checking return codes and use if/then so output fits what's available
 			
 			ALARM_TEXT="$ALARM_TEXT Alarm $COUNT: $ALARM_DESC $ALARM_TIME"
-			COUNTER=$(expr $COUNTER + 1)
+			COUNTER=$(($COUNTER + 1))
       done
 
 	else
@@ -471,7 +471,7 @@ function CheckAmbientTemp(){
 	
 	AMBIENT_TEMP=$(get_snmp $OID_iemStatusProbeCurrentTemp)
 	check_snmp_error "$?" "$AMBIENT_TEMP"
-	#TEMP_FAHRENHEIT=$(expr 9 '*' $AMBIENT_TEMP / 5 + 32)
+	#TEMP_FAHRENHEIT=$((9 * $AMBIENT_TEMP / 5 + 32))
 	TEMP_FAHRENHEIT=$(echo "scale=1;9*$AMBIENT_TEMP/5+32" | bc -l)
 
 	HUMIDITY_VALUE=$(get_snmp $OID_iemStatusProbeCurrentHumid)
@@ -503,7 +503,7 @@ function CheckBatteryTemp(){
 
 	BATTERY_TEMP=$(get_snmp $OID_upsBatteryTemperature)
 	check_snmp_error "$?" "$BATTERY_TEMP"
-#	TEMP_FAHRENHEIT=$(expr 9 '*' $BATTERY_TEMP / 5 + 32)
+#	TEMP_FAHRENHEIT=$((9 * $BATTERY_TEMP / 5 + 32))
 	TEMP_FAHRENHEIT=$(echo "scale=1;9*$BATTERY_TEMP/5+32" | bc -l)
 
 	OUTPUT="Battery Temperature is $BATTERY_TEMP degrees C ($TEMP_FAHRENHEIT degrees F)."
@@ -546,7 +546,7 @@ function CheckOutputLoad(){
 		PERCENT_LOAD[$COUNTER]=$(get_snmp $OID_upsOutputPercentLoad.$COUNTER)
 		check_snmp_error "$?" "$PERCENT_LOAD"
 		
-		COUNTER=$(expr $COUNTER + 1)
+		COUNTER=$(($COUNTER + 1))
 	done
 
 	OUTPUT="Load % on $NUMBER_LINES lines:"
@@ -577,7 +577,7 @@ function CheckOutputLoad(){
 
 		OUTPUT=$OUTPUT" L$COUNTER=${PERCENT_LOAD[$COUNTER]}%"
 		PERFDATA=$PERFDATA"'L$COUNTER'=${PERCENT_LOAD[$COUNTER]}%;$WARNING;$CRITICAL;0;100 "
-		COUNTER=$(expr $COUNTER + 1)
+		COUNTER=$(($COUNTER + 1))
 
 	done
 	
@@ -608,7 +608,7 @@ function CheckInputVoltage(){
 		VOLTAGE[$COUNTER]=$(get_snmp $OID_upsInputVoltage.$COUNTER)
 		check_snmp_error "$?" "$VOLTAGE"
 		
-		COUNTER=$(expr $COUNTER + 1)
+		COUNTER=$(($COUNTER + 1))
 	done
 
 	OUTPUT="Voltage on $NUMBER_LINES input lines:"
@@ -652,7 +652,7 @@ function CheckInputVoltage(){
 
 		OUTPUT=$OUTPUT" L$COUNTER=${VOLTAGE[$COUNTER]}V"
 		PERFDATA=$PERFDATA"'L$COUNTER'=${VOLTAGE[$COUNTER]};$WARNING;$CRITICAL;; "
-		COUNTER=$(expr $COUNTER + 1)
+		COUNTER=$(($COUNTER + 1))
 
 	done
 	
@@ -699,7 +699,7 @@ function CheckBatteryCharge(){
 	BATTERY_CHARGE=$(get_snmp $OID_upsEstimatedMinutesRemaining)
 	check_snmp_error "$?" "$BATTERY_CHARGE"
 
-	VALUE_SECS=$(expr $BATTERY_CHARGE \* 60)
+	VALUE_SECS=$(($BATTERY_CHARGE * 60))
 
 	OUTPUT="Estimated battery charge $PERCENT_CHARGE%, approximately $BATTERY_CHARGE minutes runtime remaining."
 	PERFDATA="'charge'="$PERCENT_CHARGE"%;$WARNING;$CRITICAL;; 'time_to_depleted'="$VALUE_SECS"s;;;0;"
