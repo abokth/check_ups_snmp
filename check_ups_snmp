@@ -628,14 +628,12 @@ function CheckInputVoltage(){
 			VOLTAGE_STATE=$STATE_CRIT
 			FLAG=3
 		elif [[ ${VOLTAGE[$COUNTER]} -gt $WARNING_UP ]]; then
-			if [ $FLAG -le 2
-			then
+			if [ $FLAG -le 2 ]; then
 				VOLTAGE_STATE=$STATE_WARN
 				FLAG=2
 			fi
 		elif [[ ${VOLTAGE[$COUNTER]} -lt $WARNING_DOWN ]]; then
-			if [ $FLAG -le 2
-			then
+			if [ $FLAG -le 2 ]; then
 				VOLTAGE_STATE=$STATE_WARN
 				FLAG=2
 			fi
