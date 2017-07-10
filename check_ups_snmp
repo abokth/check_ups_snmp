@@ -69,16 +69,13 @@ PERFDATA=""
 # SEPARATOR="\n"
 SEPARATOR=","
 
-print_version() {
-
+print_version(){
     echo "$APPNAME $HOMEPAGE"
 	echo "$AUTHOR"
 	echo ''
-	
 }
 
 print_usage(){
-
 	echo ''
 	echo 'Usage for SNMP v1/2c:'
 	echo "	$APPNAME -H <host/IP> -t <type of check> [-C <SNMP community>] [-S <character>] [-w <warning value>] [-c <critical value>]"
@@ -86,11 +83,9 @@ print_usage(){
 	echo 'Usage for SNMP v3:'
 	echo "	$APPNAME -H <host/IP> -t <type of check> -u <user> -x <protocol> -X <password> -a <protocol> -A <password> -l <security mode> [-S <character>] [-w <warning value>] [-c <critical value>]"
 	echo ''
-	
 }
 
 print_help(){
-
 	print_version
 	echo 'Description:'
 	echo "$APPNAME is a Nagios plugin to check SAI or UPS status with CS121 and other SNMP card adapters."
@@ -194,7 +189,6 @@ print_help(){
 	echo ''
 	
     exit $STATE_UNK
-	
 }
 
 ## Universal SNMP OIDS for UPS ##
@@ -352,7 +346,6 @@ OID_iemStatusProbeCurrentHumid='1.3.6.1.4.1.318.1.1.10.2.3.2.1.6.1'
 
 
 CheckAssetInfo(){
-
 	MAKE=`get_snmp $OID_upsIdentManufacturer`
 	check_snmp_error "$?" "$MAKE"
 	
@@ -376,7 +369,6 @@ CheckAssetInfo(){
 	if [[ "$SERIAL_NUM" != "No Such Object available on this agent at this OID" ]]; then
 	    OUTPUT="$OUTPUT, Serial # $SERIAL_NUM"
 	fi
-	
 }
 
 function CheckSelfTest(){
@@ -405,31 +397,25 @@ function CheckSelfTest(){
 	PERFDATA="'test_result'=$TEST_STATUS"
 	
 	return $TEST_STATE
-	
 }
 
 CheckInputLines(){
-
 	NUMBER_LINES=`get_snmp $OID_upsInputNumLines`
 	check_snmp_error "$?" "$NUMBER_LINES"
 	
 	OUTPUT="Number of input lines = $NUMBER_LINES"
 	PERFDATA="'lines'=$NUMBER_LINES"
-	
 }
 
 CheckOutputLines(){
-
 	NUMBER_LINES=`get_snmp $OID_upsOutputNumLines`
 	check_snmp_error "$?" "$NUMBER_LINES"
 	
 	OUTPUT="Number of output lines = $NUMBER_LINES"
 	PERFDATA="'lines'=$NUMBER_LINES"
-	
 }
 
 function CheckUPSAlarm(){
-
 	ALARM_STATE=$STATE_OK
 	ALARM_TEXT=""
 	ALARM_DESC=""
@@ -470,11 +456,9 @@ function CheckUPSAlarm(){
 	PERFDATA="'alarms'=$NUMBER_ALARMS"
 	
 	return $ALARM_STATE
-	
 }
 
 function CheckAmbientTemp(){
-
 	TEMP_STATE=$STATE_OK
 
 	if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
@@ -507,11 +491,9 @@ function CheckAmbientTemp(){
 	fi
 	
 	return $TEMP_STATE
-	
 }
 
 function CheckBatteryTemp(){
-
 	BATTERY_STATE=$STATE_OK
 
 	if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
@@ -538,11 +520,9 @@ function CheckBatteryTemp(){
 	fi
 	
 	return $BATTERY_STATE
-	
 }
 
 function CheckOutputLoad(){
-
 	LOAD_STATE=$STATE_OK
 	
 	if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
@@ -602,11 +582,9 @@ function CheckOutputLoad(){
 	done
 	
 	return $LOAD_STATE
-	
 }
 
 function CheckInputVoltage(){
-
 	VOLTAGE_STATE=$STATE_OK
 
 	if [[ -z "$WARNING" || -z "$CRITICAL" ]]; then
@@ -679,11 +657,9 @@ function CheckInputVoltage(){
 	done
 	
 	return $VOLTAGE_STATE
-	
 }
 
 function CheckBatteryStatus(){
-
 	BATTERY_STATE=$STATE_OK
 	BATTERY_STATUS=`get_snmp $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator`
 	check_snmp_error "$?" "$BATTERY_STATUS"
@@ -706,11 +682,9 @@ function CheckBatteryStatus(){
 	OUTPUT="Battery Status $BATTERY_STATUS_TEXT."
 	
 	return $BATTERY_STATE
-
 }
 
 function CheckBatteryCharge(){
-
 	BATTERY_STATE=$STATE_OK
 
 	if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
@@ -741,11 +715,9 @@ function CheckBatteryCharge(){
 	fi
 	
 	return $BATTERY_STATE
-
 }
 
 walk_snmp(){
-
 	if [ $2 = true ]; then
 		OUTPUT_OPTIONS="-Oavq"
 	else
@@ -772,11 +744,9 @@ walk_snmp(){
 	else
 		echo "$RESULT_TEXT" 
 	fi
-	
 }
 
 get_snmp(){
-
 	if [[ $SNMPVERSION = 3 ]]; then
 		RESULT_TEXT=`snmpget -v $SNMPVERSION -Oavq -u $SNMPUSER -l $PRIVILEGELEVEL -x $PRIVACYPROTOCOL -X $PRIVACYPASSWORD -a $AUTHPROTOCOL -A $AUTHPASSWORD $HOST_NAME $1`
 		RESULT_CODE=$?
@@ -793,17 +763,14 @@ get_snmp(){
 	fi
 
 	echo "$RESULT_TEXT"
-	
 }
 
 # Tests errors returned by function operations		#
 check_snmp_error(){
-
 	 if [[ $1 -ne 0 ]]; then
 		echo $2
 		exit $STATE_UNK
 	fi
-	
 }
 
 ## MAIN PROGRAM CODE ##
