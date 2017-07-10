@@ -50,6 +50,7 @@
 #		GLOBAL VARIABLES			#
 #########################################################
 APPNAME=`basename $0`
+
 VERSION="Version 1.5.1"
 AUTHOR="Alexander Boström (abo@kth.se)"
 
@@ -389,7 +390,13 @@ CheckAssetInfo(){
 	check_snmp_error "$?" "$PRODUCT"
 	
 	#!!! How to get firmware to handle the spaces / special characters???
-	OUTPUT="$MAKE $MODEL ($PRODUCT), Serial # $SERIAL_NUM"
+	OUTPUT="$NAME $MODEL"
+	if [[ "$PRODUCT" != "No Such Object available on this agent at this OID" ]]; then
+	    OUTPUT="$OUTPUT ($PRODUCT)"
+	fi
+	if [[ "$SERIAL_NUM" != "No Such Object available on this agent at this OID" ]]; then
+	    OUTPUT="$OUTPUT, Serial # $SERIAL_NUM"
+	fi
 	
 }
 
