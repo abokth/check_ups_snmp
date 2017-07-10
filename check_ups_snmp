@@ -40,18 +40,11 @@
 #########################################################
 
 #########################################################
-#							#
-# See https://github.com/abokth/check_ups_snmp for      #
-# history, the latest version and contact info.         #
-#							#
-#########################################################
-
-#########################################################
 #		GLOBAL VARIABLES			#
 #########################################################
 APPNAME=`basename $0`
 
-VERSION="Version 1.5.1"
+HOMEPAGE="https://github.com/abokth/check_ups_snmp"
 AUTHOR="Alexander Boström (abo@kth.se)"
 
 # Default settings for connection
@@ -82,7 +75,7 @@ SEPARATOR=","
 #########################################################
 print_version() {
 
-    echo "$APPNAME $VERSION"
+    echo "$APPNAME $HOMEPAGE"
 	echo "$AUTHOR"
 	echo ''
 	
