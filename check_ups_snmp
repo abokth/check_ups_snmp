@@ -425,9 +425,9 @@ function CheckUPSAlarm(){
 
 	if [[ $NUMBER_ALARMS -eq 0 ]]; then
 		OUTPUT="No alarms present."
-	elif [[ $NUMBER_ALARMS -gt 0 ]]
+	elif [[ $NUMBER_ALARMS -gt 0 ]]; then
 		COUNTER=1
-		then ALARM_STATE=$STATE_CRIT
+	    ALARM_STATE=$STATE_CRIT
 
 		while [ $COUNTER -le $NUMBER_ALARMS ]
 		do
@@ -435,7 +435,7 @@ function CheckUPSAlarm(){
 			check_snmp_error "$?" "$OID_ALARM_DESC"
 			
 			ALARM_DESC=$(snmptranslate -M $MIBS_PATH -m ALL $OID_ALARM_DESC | awk -F:: '{print $2}')
-			if [ "$ALARM_DESC" = "" ];then
+			if [ "$ALARM_DESC" = "" ]; then
 				ALARM_DESC=$OID_ALARM_DESC
 			fi
 
@@ -480,12 +480,12 @@ function CheckAmbientTemp(){
 	OUTPUT="$PROBE_NAME: $AMBIENT_TEMP degrees C ($TEMP_FAHRENHEIT degrees F), $HUMIDITY_VALUE % humidity."
 	PERFDATA="'temperature'=$AMBIENT_TEMP;$WARNING;$CRITICAL"
 
-	if [[ $AMBIENT_TEMP -gt $CRITICAL ]]
-		then TEMP_STATE=$STATE_CRIT
-	elif [[ $AMBIENT_TEMP -ge $WARNING ]]
-		then TEMP_STATE=$STATE_WARN
-	elif [[ $AMBIENT_TEMP -lt $WARNING ]]
-		then TEMP_STATE=$STATE_OK
+	if [[ $AMBIENT_TEMP -gt $CRITICAL ]]; then
+	    TEMP_STATE=$STATE_CRIT
+	elif [[ $AMBIENT_TEMP -ge $WARNING ]]; then
+	    TEMP_STATE=$STATE_WARN
+	elif [[ $AMBIENT_TEMP -lt $WARNING ]]; then
+	    TEMP_STATE=$STATE_OK
 	else
 		TEMP_STATE=$STATE_UNK
 	fi
@@ -509,12 +509,12 @@ function CheckBatteryTemp(){
 	OUTPUT="Battery Temperature is $BATTERY_TEMP degrees C ($TEMP_FAHRENHEIT degrees F)."
 	PERFDATA="'temperature'=$BATTERY_TEMP;$WARNING;$CRITICAL"
 
-	if [[ $BATTERY_TEMP -gt $CRITICAL ]]
-		then BATTERY_STATE=$STATE_CRIT
-	elif [[ $BATTERY_TEMP -ge $WARNING ]]
-		then BATTERY_STATE=$STATE_WARN
-	elif [[ $BATTERY_TEMP -lt $WARNING ]]
-		then BATTERY_STATE=$STATE_OK
+	if [[ $BATTERY_TEMP -gt $CRITICAL ]]; then
+	    BATTERY_STATE=$STATE_CRIT
+	elif [[ $BATTERY_TEMP -ge $WARNING ]]; then
+	    BATTERY_STATE=$STATE_WARN
+	elif [[ $BATTERY_TEMP -lt $WARNING ]]; then
+	    BATTERY_STATE=$STATE_OK
 	else
 		BATTERY_STATE=$STATE_UNK
 	fi
@@ -560,13 +560,13 @@ function CheckOutputLoad(){
 			LOAD_STATE=$STATE_CRIT
 			FLAG=3
 		elif [[ ${PERCENT_LOAD[$COUNTER]} -gt $WARNING ]]; then
-			if test $FLAG -le 2
-				then LOAD_STATE=$STATE_WARN
+			if [ $FLAG -le 2 ]; then
+			    LOAD_STATE=$STATE_WARN
 				FLAG=2
 			fi
 		elif [[ ${PERCENT_LOAD[$COUNTER]} -le $WARNING ]]; then
-			if test $FLAG -le 0
-				then LOAD_STATE=$STATE_OK
+			if [ $FLAG -le 0 ]; then
+			    LOAD_STATE=$STATE_OK
 			fi
 		else
 			if [[ $FLAG -le 1 ]]; then
@@ -702,12 +702,12 @@ function CheckBatteryCharge(){
 	OUTPUT="Estimated battery charge $PERCENT_CHARGE%, approximately $BATTERY_CHARGE minutes runtime remaining."
 	PERFDATA="'charge'="$PERCENT_CHARGE"%;$WARNING;$CRITICAL;; 'time_to_depleted'="$VALUE_SECS"s;;;0;"
 
-	if [[ $PERCENT_CHARGE -le $CRITICAL ]]
-		then BATTERY_STATE=$STATE_CRIT
-	elif [[ $PERCENT_CHARGE -le $WARNING ]]
-		then BATTERY_STATE=$STATE_WARN
-	elif [[ $PERCENT_CHARGE -gt $WARNING ]]
-		then BATTERY_STATE=$STATE_OK
+	if [[ $PERCENT_CHARGE -le $CRITICAL ]]; then
+	    BATTERY_STATE=$STATE_CRIT
+	elif [[ $PERCENT_CHARGE -le $WARNING ]]; then
+	    BATTERY_STATE=$STATE_WARN
+	elif [[ $PERCENT_CHARGE -gt $WARNING ]]; then
+	    BATTERY_STATE=$STATE_OK
 	else
 		BATTERY_STATE=$STATE_UNK
 	fi
@@ -750,7 +750,7 @@ binaries="snmpget snmptranslate awk"
 
 for required_binary in $binaries; do
 	which $required_binary > /dev/null
-	if [ "$?" != '0' ];then
+	if [ "$?" != '0' ]; then
 		echo "UNKNOWN: $APPNAME: No usable '$required_binary' binary in '$PATH'"
 		exit $STATE_UNK
 	fi
