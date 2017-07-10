@@ -472,7 +472,7 @@ function CheckAmbientTemp(){
 	AMBIENT_TEMP=$(get_snmp $OID_iemStatusProbeCurrentTemp)
 	check_snmp_error "$?" "$AMBIENT_TEMP"
 	#TEMP_FAHRENHEIT=$((9 * $AMBIENT_TEMP / 5 + 32))
-	TEMP_FAHRENHEIT=$(echo "scale=1;9*$AMBIENT_TEMP/5+32" | bc -l)
+	TEMP_FAHRENHEIT=$( <<<"scale=1;9*$AMBIENT_TEMP/5+32" bc -l )
 
 	HUMIDITY_VALUE=$(get_snmp $OID_iemStatusProbeCurrentHumid)
 	check_snmp_error "$?" "$HUMIDITY_VALUE"
@@ -504,7 +504,7 @@ function CheckBatteryTemp(){
 	BATTERY_TEMP=$(get_snmp $OID_upsBatteryTemperature)
 	check_snmp_error "$?" "$BATTERY_TEMP"
 #	TEMP_FAHRENHEIT=$((9 * $BATTERY_TEMP / 5 + 32))
-	TEMP_FAHRENHEIT=$(echo "scale=1;9*$BATTERY_TEMP/5+32" | bc -l)
+	TEMP_FAHRENHEIT=$( <<<"scale=1;9*$BATTERY_TEMP/5+32" bc -l)
 
 	OUTPUT="Battery Temperature is $BATTERY_TEMP degrees C ($TEMP_FAHRENHEIT degrees F)."
 	PERFDATA="'temperature'=$BATTERY_TEMP;$WARNING;$CRITICAL"
@@ -614,10 +614,10 @@ function CheckInputVoltage(){
 	OUTPUT="Voltage on $NUMBER_LINES input lines:"
 	COUNTER=1
 	FLAG=0
-	WARNING_UP=$(echo $WARNING | awk -F: '{print $2}')
-	WARNING_DOWN=$(echo $WARNING | awk -F: '{print $1}')
-	CRITICAL_UP=$(echo $CRITICAL | awk -F: '{print $2}')
-	CRITICAL_DOWN=$(echo $CRITICAL | awk -F: '{print $1}')
+	WARNING_UP=$( <<<$WARNING awk -F: '{print $2}')
+	WARNING_DOWN=$( <<<$WARNING awk -F: '{print $1}')
+	CRITICAL_UP=$( <<<$CRITICAL awk -F: '{print $2}')
+	CRITICAL_DOWN=$( <<<$CRITICAL awk -F: '{print $1}')
 
 	for valor in ${VOLTAGE[*]}
 	do
@@ -756,7 +756,7 @@ get_snmp(){
 		RESULT_CODE=$?
 	fi
 
-	RESULT_TEXT=$(echo "$RESULT_TEXT" | tr -d "\"")
+	RESULT_TEXT=$( <<<"$RESULT_TEXT" tr -d "\"")
 	if [[ $RESULT_CODE -ne 0 ]]; then
 		echo "Plugin $APPNAME failure - snmpget command error. $RESULT_TEXT"
 		exit $STATE_UNK
