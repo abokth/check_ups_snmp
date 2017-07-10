@@ -614,10 +614,10 @@ function CheckInputVoltage(){
 	OUTPUT="Voltage on $NUMBER_LINES input lines:"
 	COUNTER=1
 	FLAG=0
-	WARNING_UP=$( <<<$WARNING awk -F: '{print $2}')
-	WARNING_DOWN=$( <<<$WARNING awk -F: '{print $1}')
-	CRITICAL_UP=$( <<<$CRITICAL awk -F: '{print $2}')
-	CRITICAL_DOWN=$( <<<$CRITICAL awk -F: '{print $1}')
+	WARNING_UP="${WARNING#*:}"
+	WARNING_DOWN="${WARNING%:*}"
+	CRITICAL_UP="${CRITICAL#*:}"
+	CRITICAL_DOWN="${CRITICAL%:*}"
 
 	for valor in ${VOLTAGE[*]}
 	do
