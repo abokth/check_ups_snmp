@@ -727,7 +727,7 @@ get_snmp(){
 		RESULT_CODE=$?
 	fi
 
-	RESULT_TEXT=$( <<<"$RESULT_TEXT" tr -d "\"")
+	RESULT_TEXT="${RESULT_TEXT//\"}"
 	if [[ $RESULT_CODE -ne 0 ]]; then
 		echo "Plugin $APPNAME failure - snmpget command error. $RESULT_TEXT"
 		exit $STATE_UNK
@@ -748,7 +748,7 @@ check_snmp_error(){
 
 # Check that all required binaries for the script are available
 # 	EXIT with an UNKNOWN status if not
-binaries="snmpget snmptranslate tr awk"
+binaries="snmpget snmptranslate awk"
 
 for required_binary in $binaries; do
 	which $required_binary > /dev/null
