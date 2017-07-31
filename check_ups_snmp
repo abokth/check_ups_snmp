@@ -535,7 +535,7 @@ function CheckOutputLoad() {
     check_snmp_error "$?" "$NUMBER_LINES"
 
     if [[ $NUMBER_LINES -le 0 ]]; then
-	print "Error! Number of lines=$NUMBER_LINES"
+	echo "Error! Number of lines=$NUMBER_LINES"
 	exit $STATE_UNK
     fi
 
