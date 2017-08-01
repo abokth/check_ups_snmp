@@ -584,6 +584,67 @@ function CheckOutputLoad() {
     return $LOAD_STATE
 }
 
+function CheckOutputLoadDiff() {
+    LOAD_STATE=$STATE_OK
+
+    if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
+	echo "No WARNING or CRITICAL value specified!"
+	print_usage
+	exit $STATE_UNK
+    fi
+
+    NUMBER_LINES=$(get_snmp $OID_upsOutputNumLines)
+    check_snmp_error "$?" "$NUMBER_LINES"
+
+    if [[ $NUMBER_LINES -le 0 ]]; then
+	echo "Error! Number of lines=$NUMBER_LINES"
+	exit $STATE_UNK
+    fi
+
+    COUNTER=1
+
+    MIN=""
+    MINLINE=""
+    MAX=""
+    MAXLINE=""
+
+    while [[ $COUNTER -le $NUMBER_LINES ]]
+    do
+	LINE_PERCENT_LOAD=$(get_snmp $OID_upsOutputPercentLoad.$COUNTER)
+	check_snmp_error "$?" "$LINE_PERCENT_LOAD"
+
+	if [[ -z "$MIN" ]] || (( "$MIN" > "$LINE_PERCENT_LOAD" )); then
+	    MIN="$LINE_PERCENT_LOAD"
+	    MINLINE="$COUNTER"
+	fi
+	if [[ -z "$MAX" ]] || (( "$MAX" < "$LINE_PERCENT_LOAD" )); then
+	    MAX="$LINE_PERCENT_LOAD"
+	    MAXLINE="$COUNTER"
+	fi
+
+	COUNTER=$(($COUNTER + 1))
+    done
+
+    LOADDIFF=$(($MAX - $MIN))
+
+    OUTPUT="Minimum load L${MINLINE}=${MIN}%. Maximum load L${MAXLINE}=${MAX}%. Diff: $LOADDIFF"
+
+    if (( "$LOADDIFF" > $CRITICAL )); then
+	LOAD_STATE=$STATE_CRIT
+	FLAG=3
+    elif (( "$LOADDIFF" > $WARNING )); then
+	LOAD_STATE=$STATE_CRIT
+	FLAG=2
+    else
+	LOAD_STATE=$STATE_OK
+	FLAG=0
+    fi
+
+    PERFDATA=$PERFDATA"'Ldiff'=$LOADDIFF;$WARNING;$CRITICAL;0;100 "
+
+    return $LOAD_STATE
+}
+
 function CheckInputVoltage() {
     VOLTAGE_STATE=$STATE_OK
 
@@ -861,6 +922,10 @@ if [ ! -z $CHECK_TYPE ]; then
 	    ;;
 	load)
 	    CheckOutputLoad
+	    STATE=$?
+	    ;;
+	load_diff)
+	    CheckOutputLoadDiff
 	    STATE=$?
 	    ;;
 	voltage)
