@@ -394,7 +394,7 @@ function CheckSelfTest() {
     check_snmp_error "$?" "$TEST_DATE"
 
     OUTPUT="Self-test on $TEST_DATE $TEST_RESULT"
-    PERFDATA="'test_result'=$TEST_STATUS"
+    PERFDATA="test_result=$TEST_STATUS"
 
     return $TEST_STATE
 }
@@ -404,7 +404,7 @@ CheckInputLines() {
     check_snmp_error "$?" "$NUMBER_LINES"
 
     OUTPUT="Number of input lines = $NUMBER_LINES"
-    PERFDATA="'lines'=$NUMBER_LINES"
+    PERFDATA="lines=$NUMBER_LINES"
 }
 
 CheckOutputLines() {
@@ -412,7 +412,7 @@ CheckOutputLines() {
     check_snmp_error "$?" "$NUMBER_LINES"
 
     OUTPUT="Number of output lines = $NUMBER_LINES"
-    PERFDATA="'lines'=$NUMBER_LINES"
+    PERFDATA="lines=$NUMBER_LINES"
 }
 
 function CheckUPSAlarm() {
@@ -453,7 +453,7 @@ function CheckUPSAlarm() {
     fi
 
     OUTPUT="$NUMBER_ALARMS alarms present.$ALARM_TEXT"
-    PERFDATA="'alarms'=$NUMBER_ALARMS"
+    PERFDATA="alarms=$NUMBER_ALARMS"
 
     return $ALARM_STATE
 }
@@ -478,7 +478,7 @@ function CheckAmbientTemp() {
     check_snmp_error "$?" "$HUMIDITY_VALUE"
 
     OUTPUT="$PROBE_NAME: $AMBIENT_TEMP degrees C ($TEMP_FAHRENHEIT degrees F), $HUMIDITY_VALUE % humidity."
-    PERFDATA="'temperature'=$AMBIENT_TEMP;$WARNING;$CRITICAL"
+    PERFDATA="temperature=$AMBIENT_TEMP;$WARNING;$CRITICAL"
 
     if [[ $AMBIENT_TEMP -gt $CRITICAL ]]; then
 	TEMP_STATE=$STATE_CRIT
@@ -507,7 +507,7 @@ function CheckBatteryTemp() {
     TEMP_FAHRENHEIT=$( <<<"scale=1;9*$BATTERY_TEMP/5+32" bc -l)
 
     OUTPUT="Battery Temperature is $BATTERY_TEMP degrees C ($TEMP_FAHRENHEIT degrees F)."
-    PERFDATA="'temperature'=$BATTERY_TEMP;$WARNING;$CRITICAL"
+    PERFDATA="temperature=$BATTERY_TEMP;$WARNING;$CRITICAL"
 
     if [[ $BATTERY_TEMP -gt $CRITICAL ]]; then
 	BATTERY_STATE=$STATE_CRIT
@@ -576,7 +576,7 @@ function CheckOutputLoad() {
 	fi
 
 	OUTPUT=$OUTPUT" L$COUNTER=${PERCENT_LOAD[$COUNTER]}%"
-	PERFDATA=$PERFDATA"'L$COUNTER'=${PERCENT_LOAD[$COUNTER]}%;$WARNING;$CRITICAL;0;100 "
+	PERFDATA="${PERFDATA}L$COUNTER=${PERCENT_LOAD[$COUNTER]}%;$WARNING;$CRITICAL;0;100 "
 	COUNTER=$(($COUNTER + 1))
 
     done
@@ -640,7 +640,7 @@ function CheckOutputLoadDiff() {
 	FLAG=0
     fi
 
-    PERFDATA=$PERFDATA"'Ldiff'=$LOADDIFF;$WARNING;$CRITICAL;0;100 "
+    PERFDATA="Ldiff=$LOADDIFF;$WARNING;$CRITICAL;0;100 "
 
     return $LOAD_STATE
 }
@@ -710,7 +710,7 @@ function CheckInputVoltage() {
 	fi
 
 	OUTPUT=$OUTPUT" L$COUNTER=${VOLTAGE[$COUNTER]}V"
-	PERFDATA=$PERFDATA"'L$COUNTER'=${VOLTAGE[$COUNTER]};$WARNING;$CRITICAL;; "
+	PERFDATA="${PERFDATA}L$COUNTER=${VOLTAGE[$COUNTER]};$WARNING;$CRITICAL;; "
 	COUNTER=$(($COUNTER + 1))
 
     done
@@ -761,7 +761,7 @@ function CheckBatteryCharge() {
     VALUE_SECS=$(($BATTERY_CHARGE * 60))
 
     OUTPUT="Estimated battery charge $PERCENT_CHARGE%, approximately $BATTERY_CHARGE minutes runtime remaining."
-    PERFDATA="'charge'="$PERCENT_CHARGE"%;$WARNING;$CRITICAL;; 'time_to_depleted'="$VALUE_SECS"s;;;0;"
+    PERFDATA="charge=${PERCENT_CHARGE}%;$WARNING;$CRITICAL;; time_to_depleted=${VALUE_SECS}s;;;0;"
 
     if [[ $PERCENT_CHARGE -le $CRITICAL ]]; then
 	BATTERY_STATE=$STATE_CRIT
