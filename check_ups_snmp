@@ -469,7 +469,7 @@ function CheckUPSAlarm() {
 		check_snmp_error "$?" "$OID_ALARM_DESC"
 	    fi
 
-	    ALARM_DESC=$(snmptranslate -M $MIBS_PATH -m ALL $OID_ALARM_DESC | awk -F:: '{print $2}')
+	    ALARM_DESC=$(snmptranslate -M $MIBS_PATH -m ALL $OID_ALARM_DESC | awk -F:: '{print $2}') || ALARM_DESC=""
 	    if [ "$ALARM_DESC" = "" ]; then
 		ALARM_DESC=$OID_ALARM_DESC
 	    fi
