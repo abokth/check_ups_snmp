@@ -376,14 +376,13 @@ CheckAssetInfo() {
 function CheckSelfTest() {
     local test_state=$STATE_OK
 
-    get_snmp $OID_upsTestResult
-    local test_status="$result_text"
-    PERFDATA="test_result=$test_status"
-
     get_snmp $OID_upsTestDate
     local test_date="$result_text"
 
-    case $test_status in
+    get_snmp $OID_upsTestResult
+    PERFDATA="test_result=$result_text"
+
+    case $result_text in
 	1) OUTPUT="Self-test on $test_date passed!"
 	   return $STATE_OK
 	   ;;
@@ -404,18 +403,14 @@ function CheckSelfTest() {
 
 CheckInputLines() {
     get_snmp $OID_upsInputNumLines
-    local number_lines="$result_text"
-
-    OUTPUT="Number of input lines = $number_lines"
-    PERFDATA="lines=$number_lines"
+    OUTPUT="Number of input lines = $result_text"
+    PERFDATA="lines=$result_text"
 }
 
 CheckOutputLines() {
     get_snmp $OID_upsOutputNumLines
-    local number_lines="$result_text"
-
-    OUTPUT="Number of output lines = $number_lines"
-    PERFDATA="lines=$number_lines"
+    OUTPUT="Number of output lines = $result_text"
+    PERFDATA="lines=$result_text"
 }
 
 function CheckUPSAlarm() {
