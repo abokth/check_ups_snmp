@@ -437,7 +437,7 @@ function CheckUPSAlarm() {
 	    OID_ALARM_DESC="$result_text"
 
 	    ALARM_DESC=$(snmptranslate -M $MIBS_PATH -m ALL $OID_ALARM_DESC | awk -F:: '{print $2}') || ALARM_DESC=""
-	    if [ "$ALARM_DESC" = "" ]; then
+	    if [[ -z "$ALARM_DESC" ]]; then
 		ALARM_DESC=$OID_ALARM_DESC
 	    fi
 
