@@ -795,10 +795,8 @@ get_snmp() {
 
 # Check that all required binaries for the script are available
 # 	EXIT with an UNKNOWN status if not
-binaries="snmpget snmptranslate awk"
-
-for required_binary in $binaries; do
-    if which $required_binary > /dev/null; then
+for required_binary in snmpget snmptranslate awk; do
+    if type $required_binary >/dev/null; then
 	:
     else
 	echo "UNKNOWN: $APPNAME: No usable '$required_binary' binary in '$PATH'"
