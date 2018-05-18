@@ -378,28 +378,28 @@ function CheckSelfTest() {
 
     get_snmp $OID_upsTestResult
     local test_status="$result_text"
-
-    local test_result
-    case $test_status in
-	1) test_result="passed!";;
-	2) test_result="failed!"
-	   test_state=$STATE_CRIT
-	   ;;
-	3) test_result="invalid!"
-	   test_state=$STATE_UNK
-	   ;;
-	4) test_result="in progress!"
-	   test_state=$STATE_UNK
-	   ;;
-    esac
+    PERFDATA="test_result=$test_status"
 
     get_snmp $OID_upsTestDate
     local test_date="$result_text"
 
-    OUTPUT="Self-test on $test_date $test_result"
-    PERFDATA="test_result=$test_status"
+    case $test_status in
+	1) OUTPUT="Self-test on $test_date passed!"
+	   return $STATE_OK
+	   ;;
+	2) OUTPUT="Self-test on $test_date failed!"
+	   return $STATE_CRIT
+	   ;;
+	3) OUTPUT="Self-test on $test_date invalid!"
+	   return $STATE_UNK
+	   ;;
+	4) OUTPUT="Self-test on $test_date in progress!"
+	   return $STATE_UNK
+	   ;;
+    esac
 
-    return $test_state
+    OUTPUT="Self-test on $test_date UNKNOWN"
+    return $STATE_UNK
 }
 
 CheckInputLines() {
