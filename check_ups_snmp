@@ -431,8 +431,7 @@ function CheckUPSAlarm() {
 	COUNTER=1
 	ALARM_STATE=$STATE_CRIT
 
-	while [ $COUNTER -le $NUMBER_ALARMS ]
-	do
+	while (( $COUNTER <= $NUMBER_ALARMS )); do
 	    get_snmp $OID_upsAlarmDescr.$COUNTER
 	    OID_ALARM_DESC="$result_text"
 
@@ -562,12 +561,12 @@ function CheckOutputLoad() {
 	    LOAD_STATE=$STATE_CRIT
 	    FLAG=3
 	elif [[ ${PERCENT_LOAD[$COUNTER]} -gt $WARNING ]]; then
-	    if [ $FLAG -le 2 ]; then
+	    if (( $FLAG <= 2 )); then
 		LOAD_STATE=$STATE_WARN
 		FLAG=2
 	    fi
 	elif [[ ${PERCENT_LOAD[$COUNTER]} -le $WARNING ]]; then
-	    if [ $FLAG -le 0 ]; then
+	    if (( $FLAG <= 0 )); then
 		LOAD_STATE=$STATE_OK
 	    fi
 	else
@@ -691,17 +690,17 @@ function CheckInputVoltage() {
 	    VOLTAGE_STATE=$STATE_CRIT
 	    FLAG=3
 	elif [[ ${VOLTAGE[$COUNTER]} -gt $WARNING_UP ]]; then
-	    if [ $FLAG -le 2 ]; then
+	    if (( $FLAG <= 2 )); then
 		VOLTAGE_STATE=$STATE_WARN
 		FLAG=2
 	    fi
 	elif [[ ${VOLTAGE[$COUNTER]} -lt $WARNING_DOWN ]]; then
-	    if [ $FLAG -le 2 ]; then
+	    if (( $FLAG <= 2 )); then
 		VOLTAGE_STATE=$STATE_WARN
 		FLAG=2
 	    fi
 	elif [[ ${VOLTAGE[$COUNTER]} -le $WARNING_UP ]]; then
-	    if [ $FLAG -le 0 ]; then
+	    if (( $FLAG <= 0 )); then
 		VOLTAGE_STATE=$STATE_OK
 	    fi
 	else
@@ -899,7 +898,7 @@ while test -n "$1"; do
 
 done
 
-if [ ! -z $CHECK_TYPE ]; then
+if [[ -n "$CHECK_TYPE" ]]; then
     # Determine the check to perform
     case "$CHECK_TYPE" in
 	alarm)
@@ -953,7 +952,7 @@ if [ ! -z $CHECK_TYPE ]; then
 	$STATE_UNK) STATE_STRING="UNKNOWN";;
     esac
 
-    if [ "$PERFDATA" == '' ]; then
+    if [[ -z "$PERFDATA" ]]; then
 	echo "$STATE_STRING: $OUTPUT"
     else
 	echo "$STATE_STRING: $OUTPUT|$PERFDATA"
