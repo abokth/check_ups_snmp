@@ -346,20 +346,35 @@ OID_iemStatusProbeCurrentHumid='1.3.6.1.4.1.318.1.1.10.2.3.2.1.6.1'
 
 
 CheckAssetInfo() {
-    MAKE=$(get_snmp $OID_upsIdentManufacturer)
-    check_snmp_error "$?" "$MAKE"
+    if MAKE=$(get_snmp $OID_upsIdentManufacturer); then
+	:
+    else
+	check_snmp_error "$?" "$MAKE"
+    fi
 
-    MODEL=$(get_snmp $OID_upsIdentModel)
-    check_snmp_error "$?" "$MODEL"
+    if MODEL=$(get_snmp $OID_upsIdentModel); then
+	:
+    else
+	check_snmp_error "$?" "$MODEL"
+    fi
 
-    FIRMWARE=$(get_snmp $OID_upsIdentUPSSoftwareVersion)
-    check_snmp_error "$?" "$FIRMWARE"
+    if FIRMWARE=$(get_snmp $OID_upsIdentUPSSoftwareVersion); then
+	:
+    else
+	check_snmp_error "$?" "$FIRMWARE"
+    fi
 
-    SERIAL_NUM=$(get_snmp $OID_upsAdvIdentSerialNumber)
-    check_snmp_error "$?" "$SERIAL_NUM"
+    if SERIAL_NUM=$(get_snmp $OID_upsAdvIdentSerialNumber); then
+	:
+    else
+	check_snmp_error "$?" "$SERIAL_NUM"
+    fi
 
-    PRODUCT=$(get_snmp $OID_upsBasicIdentModel)
-    check_snmp_error "$?" "$PRODUCT"
+    if PRODUCT=$(get_snmp $OID_upsBasicIdentModel); then
+	:
+    else
+	check_snmp_error "$?" "$PRODUCT"
+    fi
 
     #!!! How to get firmware to handle the spaces / special characters???
     OUTPUT="$NAME $MODEL"
@@ -374,8 +389,11 @@ CheckAssetInfo() {
 function CheckSelfTest() {
     TEST_STATE=$STATE_OK
 
-    TEST_STATUS=$(get_snmp $OID_upsTestResult)
-    check_snmp_error "$?" "$TEST_STATUS"
+    if TEST_STATUS=$(get_snmp $OID_upsTestResult); then
+	:
+    else
+	check_snmp_error "$?" "$TEST_STATUS"
+    fi
 
     case $TEST_STATUS in
 	1) TEST_RESULT="passed!";;
@@ -390,8 +408,11 @@ function CheckSelfTest() {
 	   ;;
     esac
 
-    TEST_DATE=$(get_snmp $OID_upsTestDate)
-    check_snmp_error "$?" "$TEST_DATE"
+    if TEST_DATE=$(get_snmp $OID_upsTestDate); then
+	:
+    else
+	check_snmp_error "$?" "$TEST_DATE"
+    fi
 
     OUTPUT="Self-test on $TEST_DATE $TEST_RESULT"
     PERFDATA="test_result=$TEST_STATUS"
@@ -400,16 +421,22 @@ function CheckSelfTest() {
 }
 
 CheckInputLines() {
-    NUMBER_LINES=$(get_snmp $OID_upsInputNumLines)
-    check_snmp_error "$?" "$NUMBER_LINES"
+    if NUMBER_LINES=$(get_snmp $OID_upsInputNumLines); then
+	:
+    else
+	check_snmp_error "$?" "$NUMBER_LINES"
+    fi
 
     OUTPUT="Number of input lines = $NUMBER_LINES"
     PERFDATA="lines=$NUMBER_LINES"
 }
 
 CheckOutputLines() {
-    NUMBER_LINES=$(get_snmp $OID_upsOutputNumLines)
-    check_snmp_error "$?" "$NUMBER_LINES"
+    if NUMBER_LINES=$(get_snmp $OID_upsOutputNumLines); then
+	:
+    else
+	check_snmp_error "$?" "$NUMBER_LINES"
+    fi
 
     OUTPUT="Number of output lines = $NUMBER_LINES"
     PERFDATA="lines=$NUMBER_LINES"
@@ -420,8 +447,11 @@ function CheckUPSAlarm() {
     ALARM_TEXT=""
     ALARM_DESC=""
 
-    NUMBER_ALARMS=$(get_snmp $OID_upsAlarmsPresent)
-    check_snmp_error "$?" "$NUMBER_ALARMS"
+    if NUMBER_ALARMS=$(get_snmp $OID_upsAlarmsPresent); then
+	:
+    else
+	check_snmp_error "$?" "$NUMBER_ALARMS"
+    fi
 
     if [[ $NUMBER_ALARMS -eq 0 ]]; then
 	OUTPUT="No alarms present."
@@ -431,16 +461,22 @@ function CheckUPSAlarm() {
 
 	while [ $COUNTER -le $NUMBER_ALARMS ]
 	do
-	    OID_ALARM_DESC=$(get_snmp $OID_upsAlarmDescr.$COUNTER)
-	    check_snmp_error "$?" "$OID_ALARM_DESC"
+	    if OID_ALARM_DESC=$(get_snmp $OID_upsAlarmDescr.$COUNTER); then
+		:
+	    else
+		check_snmp_error "$?" "$OID_ALARM_DESC"
+	    fi
 
 	    ALARM_DESC=$(snmptranslate -M $MIBS_PATH -m ALL $OID_ALARM_DESC | awk -F:: '{print $2}')
 	    if [ "$ALARM_DESC" = "" ]; then
 		ALARM_DESC=$OID_ALARM_DESC
 	    fi
 
-	    ALARM_TIME=$(get_snmp $OID_upsAlarmTime.$COUNTER)
-	    check_snmp_error "$?" "$ALARM_TIME"
+	    if ALARM_TIME=$(get_snmp $OID_upsAlarmTime.$COUNTER); then
+		:
+	    else
+		check_snmp_error "$?" "$ALARM_TIME"
+	    fi
 
 	    # work on checking return codes and use if/then so output fits what's available
 
@@ -466,16 +502,25 @@ function CheckAmbientTemp() {
 	exit $STATE_UNK
     fi
 
-    PROBE_NAME=$(get_snmp $OID_iemStatusProbeName)
-    check_snmp_error "$?" "$PROBE_NAME"
+    if PROBE_NAME=$(get_snmp $OID_iemStatusProbeName); then
+	:
+    else
+	check_snmp_error "$?" "$PROBE_NAME"
+    fi
 
-    AMBIENT_TEMP=$(get_snmp $OID_iemStatusProbeCurrentTemp)
-    check_snmp_error "$?" "$AMBIENT_TEMP"
+    if AMBIENT_TEMP=$(get_snmp $OID_iemStatusProbeCurrentTemp); then
+	:
+    else
+	check_snmp_error "$?" "$AMBIENT_TEMP"
+    fi
     #TEMP_FAHRENHEIT=$((9 * $AMBIENT_TEMP / 5 + 32))
     TEMP_FAHRENHEIT=$( <<<"scale=1;9*$AMBIENT_TEMP/5+32" bc -l )
 
-    HUMIDITY_VALUE=$(get_snmp $OID_iemStatusProbeCurrentHumid)
-    check_snmp_error "$?" "$HUMIDITY_VALUE"
+    if HUMIDITY_VALUE=$(get_snmp $OID_iemStatusProbeCurrentHumid); then
+	:
+    else
+	check_snmp_error "$?" "$HUMIDITY_VALUE"
+    fi
 
     OUTPUT="$PROBE_NAME: $AMBIENT_TEMP degrees C ($TEMP_FAHRENHEIT degrees F), $HUMIDITY_VALUE % humidity."
     PERFDATA="temperature=$AMBIENT_TEMP;$WARNING;$CRITICAL"
@@ -501,8 +546,11 @@ function CheckBatteryTemp() {
 	exit $STATE_UNK
     fi
 
-    BATTERY_TEMP=$(get_snmp $OID_upsBatteryTemperature)
-    check_snmp_error "$?" "$BATTERY_TEMP"
+    if BATTERY_TEMP=$(get_snmp $OID_upsBatteryTemperature); then
+	:
+    else
+	check_snmp_error "$?" "$BATTERY_TEMP"
+    fi
     #	TEMP_FAHRENHEIT=$((9 * $BATTERY_TEMP / 5 + 32))
     TEMP_FAHRENHEIT=$( <<<"scale=1;9*$BATTERY_TEMP/5+32" bc -l)
 
@@ -531,8 +579,11 @@ function CheckOutputLoad() {
 	exit $STATE_UNK
     fi
 
-    NUMBER_LINES=$(get_snmp $OID_upsOutputNumLines)
-    check_snmp_error "$?" "$NUMBER_LINES"
+    if NUMBER_LINES=$(get_snmp $OID_upsOutputNumLines); then
+	:
+    else
+	check_snmp_error "$?" "$NUMBER_LINES"
+    fi
 
     if [[ $NUMBER_LINES -le 0 ]]; then
 	echo "Error! Number of lines=$NUMBER_LINES"
@@ -543,8 +594,11 @@ function CheckOutputLoad() {
 
     while [[ $COUNTER -le $NUMBER_LINES ]]
     do
-	PERCENT_LOAD[$COUNTER]=$(get_snmp $OID_upsOutputPercentLoad.$COUNTER)
-	check_snmp_error "$?" "$PERCENT_LOAD"
+	if PERCENT_LOAD[$COUNTER]=$(get_snmp $OID_upsOutputPercentLoad.$COUNTER); then
+	    :
+	else
+	    check_snmp_error "$?" "$PERCENT_LOAD"
+	fi
 
 	COUNTER=$(($COUNTER + 1))
     done
@@ -593,8 +647,11 @@ function CheckOutputLoadDiff() {
 	exit $STATE_UNK
     fi
 
-    NUMBER_LINES=$(get_snmp $OID_upsOutputNumLines)
-    check_snmp_error "$?" "$NUMBER_LINES"
+    if NUMBER_LINES=$(get_snmp $OID_upsOutputNumLines); then
+	:
+    else
+	check_snmp_error "$?" "$NUMBER_LINES"
+    fi
 
     if [[ $NUMBER_LINES -le 0 ]]; then
 	echo "Error! Number of lines=$NUMBER_LINES"
@@ -610,8 +667,11 @@ function CheckOutputLoadDiff() {
 
     while [[ $COUNTER -le $NUMBER_LINES ]]
     do
-	LINE_PERCENT_LOAD=$(get_snmp $OID_upsOutputPercentLoad.$COUNTER)
-	check_snmp_error "$?" "$LINE_PERCENT_LOAD"
+	if LINE_PERCENT_LOAD=$(get_snmp $OID_upsOutputPercentLoad.$COUNTER); then
+	    :
+	else
+	    check_snmp_error "$?" "$LINE_PERCENT_LOAD"
+	fi
 
 	if [[ -z "$MIN" ]] || (( "$MIN" > "$LINE_PERCENT_LOAD" )); then
 	    MIN="$LINE_PERCENT_LOAD"
@@ -654,8 +714,11 @@ function CheckInputVoltage() {
 	exit $STATE_UNK
     fi
 
-    NUMBER_LINES=$(get_snmp $OID_upsInputNumLines)
-    check_snmp_error "$?" "$NUMBER_LINES"
+    if NUMBER_LINES=$(get_snmp $OID_upsInputNumLines); then
+	:
+    else
+	check_snmp_error "$?" "$NUMBER_LINES"
+    fi
 
     if [[ $NUMBER_LINES -le 0 ]]; then
 	echo "Error! Number of lines=$NUMBER_LINES"
@@ -666,8 +729,11 @@ function CheckInputVoltage() {
 
     while [[ $COUNTER -le $NUMBER_LINES ]]
     do
-	VOLTAGE[$COUNTER]=$(get_snmp $OID_upsInputVoltage.$COUNTER)
-	check_snmp_error "$?" "$VOLTAGE"
+	if VOLTAGE[$COUNTER]=$(get_snmp $OID_upsInputVoltage.$COUNTER); then
+	    :
+	else
+	    check_snmp_error "$?" "$VOLTAGE"
+	fi
 
 	COUNTER=$(($COUNTER + 1))
     done
@@ -720,8 +786,11 @@ function CheckInputVoltage() {
 
 function CheckBatteryStatus() {
     BATTERY_STATE=$STATE_OK
-    BATTERY_STATUS=$(get_snmp $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator)
-    check_snmp_error "$?" "$BATTERY_STATUS"
+    if BATTERY_STATUS=$(get_snmp $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator); then
+	:
+    else
+	check_snmp_error "$?" "$BATTERY_STATUS"
+    fi
 
     case $BATTERY_STATUS in
 	1)	BATTERY_STATUS_TEXT="Unknown"
@@ -752,11 +821,17 @@ function CheckBatteryCharge() {
 	exit $STATE_UNK
     fi
 
-    PERCENT_CHARGE=$(get_snmp $OID_upsEstimatedChargeRemaining)
-    check_snmp_error "$?" "$PERCENT_CHARGE"
+    if PERCENT_CHARGE=$(get_snmp $OID_upsEstimatedChargeRemaining); then
+	:
+    else
+	check_snmp_error "$?" "$PERCENT_CHARGE"
+    fi
 
-    BATTERY_CHARGE=$(get_snmp $OID_upsEstimatedMinutesRemaining)
-    check_snmp_error "$?" "$BATTERY_CHARGE"
+    if BATTERY_CHARGE=$(get_snmp $OID_upsEstimatedMinutesRemaining); then
+	:
+    else
+	check_snmp_error "$?" "$BATTERY_CHARGE"
+    fi
 
     VALUE_SECS=$(($BATTERY_CHARGE * 60))
 
@@ -778,12 +853,18 @@ function CheckBatteryCharge() {
 
 get_snmp() {
     if [[ $SNMPVERSION = 3 ]]; then
-	RESULT_TEXT=$(snmpget -v $SNMPVERSION -Oavq -u $SNMPUSER -l $PRIVILEGELEVEL -x $PRIVACYPROTOCOL -X $PRIVACYPASSWORD -a $AUTHPROTOCOL -A $AUTHPASSWORD $HOST_NAME $1)
-	RESULT_CODE=$?
+	if RESULT_TEXT=$(snmpget -v $SNMPVERSION -Oavq -u $SNMPUSER -l $PRIVILEGELEVEL -x $PRIVACYPROTOCOL -X $PRIVACYPASSWORD -a $AUTHPROTOCOL -A $AUTHPASSWORD $HOST_NAME $1); then
+	    RESULT_CODE=0
+	else
+	    RESULT_CODE=$?
+	fi
     else
 	# Check if community was also set
-	RESULT_TEXT=$(snmpget -v $SNMPVERSION -Oavq -c $COMMUNITY $HOST_NAME $1)
-	RESULT_CODE=$?
+	if RESULT_TEXT=$(snmpget -v $SNMPVERSION -Oavq -c $COMMUNITY $HOST_NAME $1); then
+	    RESULT_CODE=0
+	else
+	    RESULT_CODE=$?
+	fi
     fi
 
     RESULT_TEXT="${RESULT_TEXT//\"}"
@@ -810,8 +891,9 @@ check_snmp_error() {
 binaries="snmpget snmptranslate awk"
 
 for required_binary in $binaries; do
-    which $required_binary > /dev/null
-    if [ "$?" != '0' ]; then
+    if which $required_binary > /dev/null; then
+	:
+    else
 	echo "UNKNOWN: $APPNAME: No usable '$required_binary' binary in '$PATH'"
 	exit $STATE_UNK
     fi
@@ -906,31 +988,25 @@ if [ ! -z $CHECK_TYPE ]; then
     # Determine the check to perform
     case "$CHECK_TYPE" in
 	alarm)
-	    CheckUPSAlarm
-	    STATE=$?
+	    STATE=0; CheckUPSAlarm || STATE=$?
 	    ;;
 	asset)
 	    CheckAssetInfo
 	    ;;
 	atemp|ambient)
-	    CheckAmbientTemp
-	    STATE=$?
+	    STATE=0; CheckAmbientTemp || STATE=$?
 	    ;;
 	btemp|temp)
-	    CheckBatteryTemp
-	    STATE=$?
+	    STATE=0; CheckBatteryTemp || STATE=$?
 	    ;;
 	load)
-	    CheckOutputLoad
-	    STATE=$?
+	    STATE=0; CheckOutputLoad || STATE=$?
 	    ;;
 	load_diff)
-	    CheckOutputLoadDiff
-	    STATE=$?
+	    STATE=0; CheckOutputLoadDiff || STATE=$?
 	    ;;
 	voltage)
-	    CheckInputVoltage
-	    STATE=$?
+	    STATE=0; CheckInputVoltage || STATE=$?
 	    ;;
 	input_lines)
 	    CheckInputLines
@@ -939,16 +1015,13 @@ if [ ! -z $CHECK_TYPE ]; then
 	    CheckOutputLines
 	    ;;
 	selftest)
-	    CheckSelfTest
-	    STATE=$?
+	    STATE=0; CheckSelfTest || STATE=$?
 	    ;;
 	status)
-	    CheckBatteryStatus
-	    STATE=$?
+	    STATE=0; CheckBatteryStatus || STATE=$?
 	    ;;
 	charge)
-	    CheckBatteryCharge
-	    STATE=$?
+	    STATE=0; CheckBatteryCharge || STATE=$?
 	    ;;
 	*) # If no check was passed, or something is wrong, let's scram!
 	    echo "Unknown parameter: $CHECK_TYPE"
