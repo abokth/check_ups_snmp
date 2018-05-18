@@ -351,31 +351,31 @@ CheckAssetInfo() {
     if get_snmp $OID_upsIdentManufacturer; then
 	MAKE="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if get_snmp $OID_upsIdentModel; then
 	MODEL="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if get_snmp $OID_upsIdentUPSSoftwareVersion; then
 	FIRMWARE="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if get_snmp $OID_upsAdvIdentSerialNumber; then
 	SERIAL_NUM="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if get_snmp $OID_upsBasicIdentModel; then
 	PRODUCT="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     #!!! How to get firmware to handle the spaces / special characters???
@@ -394,7 +394,7 @@ function CheckSelfTest() {
     if get_snmp $OID_upsTestResult; then
 	TEST_STATUS="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     case $TEST_STATUS in
@@ -413,7 +413,7 @@ function CheckSelfTest() {
     if get_snmp $OID_upsTestDate; then
 	TEST_DATE="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     OUTPUT="Self-test on $TEST_DATE $TEST_RESULT"
@@ -426,7 +426,7 @@ CheckInputLines() {
     if get_snmp $OID_upsInputNumLines; then
 	NUMBER_LINES="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     OUTPUT="Number of input lines = $NUMBER_LINES"
@@ -437,7 +437,7 @@ CheckOutputLines() {
     if get_snmp $OID_upsOutputNumLines; then
 	NUMBER_LINES="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     OUTPUT="Number of output lines = $NUMBER_LINES"
@@ -452,7 +452,7 @@ function CheckUPSAlarm() {
     if get_snmp $OID_upsAlarmsPresent; then
 	NUMBER_ALARMS="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if [[ $NUMBER_ALARMS -eq 0 ]]; then
@@ -466,7 +466,7 @@ function CheckUPSAlarm() {
 	    if get_snmp $OID_upsAlarmDescr.$COUNTER; then
 		OID_ALARM_DESC="$result_text"
 	    else
-		check_snmp_error "$result_code" "$result_text"
+		echo "$result_text"; exit $STATE_UNK
 	    fi
 
 	    ALARM_DESC=$(snmptranslate -M $MIBS_PATH -m ALL $OID_ALARM_DESC | awk -F:: '{print $2}') || ALARM_DESC=""
@@ -477,7 +477,7 @@ function CheckUPSAlarm() {
 	    if get_snmp $OID_upsAlarmTime.$COUNTER; then
 		ALARM_TIME="$result_text"
 	    else
-		check_snmp_error "$result_code" "$result_text"
+		echo "$result_text"; exit $STATE_UNK
 	    fi
 
 	    # work on checking return codes and use if/then so output fits what's available
@@ -507,13 +507,13 @@ function CheckAmbientTemp() {
     if get_snmp $OID_iemStatusProbeName; then
 	PROBE_NAME="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if get_snmp $OID_iemStatusProbeCurrentTemp; then
 	AMBIENT_TEMP="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
     #TEMP_FAHRENHEIT=$((9 * $AMBIENT_TEMP / 5 + 32))
     TEMP_FAHRENHEIT=$( <<<"scale=1;9*$AMBIENT_TEMP/5+32" bc -l )
@@ -521,7 +521,7 @@ function CheckAmbientTemp() {
     if get_snmp $OID_iemStatusProbeCurrentHumid; then
 	HUMIDITY_VALUE="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     OUTPUT="$PROBE_NAME: $AMBIENT_TEMP degrees C ($TEMP_FAHRENHEIT degrees F), $HUMIDITY_VALUE % humidity."
@@ -551,7 +551,7 @@ function CheckBatteryTemp() {
     if get_snmp $OID_upsBatteryTemperature; then
 	BATTERY_TEMP="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
     #	TEMP_FAHRENHEIT=$((9 * $BATTERY_TEMP / 5 + 32))
     TEMP_FAHRENHEIT=$( <<<"scale=1;9*$BATTERY_TEMP/5+32" bc -l)
@@ -584,7 +584,7 @@ function CheckOutputLoad() {
     if get_snmp $OID_upsOutputNumLines; then
 	NUMBER_LINES="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if [[ $NUMBER_LINES -le 0 ]]; then
@@ -599,7 +599,7 @@ function CheckOutputLoad() {
 	if get_snmp $OID_upsOutputPercentLoad.$COUNTER; then
 	    PERCENT_LOAD[$COUNTER]="$result_text"
 	else
-	    check_snmp_error "$result_code" "$result_text"
+	    echo "$result_text"; exit $STATE_UNK
 	fi
 
 	COUNTER=$(($COUNTER + 1))
@@ -652,7 +652,7 @@ function CheckOutputLoadDiff() {
     if get_snmp $OID_upsOutputNumLines; then
 	NUMBER_LINES="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if [[ $NUMBER_LINES -le 0 ]]; then
@@ -672,7 +672,7 @@ function CheckOutputLoadDiff() {
 	if get_snmp $OID_upsOutputPercentLoad.$COUNTER; then
 	    LINE_PERCENT_LOAD="$result_text"
 	else
-	    check_snmp_error "$result_code" "$result_text"
+	    echo "$result_text"; exit $STATE_UNK
 	fi
 
 	if [[ -z "$MIN" ]] || (( "$MIN" > "$LINE_PERCENT_LOAD" )); then
@@ -719,7 +719,7 @@ function CheckInputVoltage() {
     if get_snmp $OID_upsInputNumLines; then
 	NUMBER_LINES="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if [[ $NUMBER_LINES -le 0 ]]; then
@@ -734,7 +734,7 @@ function CheckInputVoltage() {
 	if get_snmp $OID_upsInputVoltage.$COUNTER; then
 	    VOLTAGE[$COUNTER]="$result_text"
 	else
-	    check_snmp_error "$result_code" "$result_text"
+	    echo "$result_text"; exit $STATE_UNK
 	fi
 
 	COUNTER=$(($COUNTER + 1))
@@ -791,7 +791,7 @@ function CheckBatteryStatus() {
     if get_snmp $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator; then
 	BATTERY_STATUS="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     case $BATTERY_STATUS in
@@ -826,13 +826,13 @@ function CheckBatteryCharge() {
     if get_snmp $OID_upsEstimatedChargeRemaining; then
 	PERCENT_CHARGE="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     if get_snmp $OID_upsEstimatedMinutesRemaining; then
 	BATTERY_CHARGE="$result_text"
     else
-	check_snmp_error "$result_code" "$result_text"
+	echo "$result_text"; exit $STATE_UNK
     fi
 
     VALUE_SECS=$(($BATTERY_CHARGE * 60))
@@ -868,14 +868,6 @@ get_snmp() {
     else
 	result_text="Plugin $APPNAME failure - snmpget command error. ${RESULT_TEXT//\"}"
 	result_code=$STATE_UNK
-    fi
-}
-
-# Tests errors returned by function operations		#
-check_snmp_error() {
-    if [[ $1 -ne 0 ]]; then
-	echo $2
-	exit $STATE_UNK
     fi
 }
 
