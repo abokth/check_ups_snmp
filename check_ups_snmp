@@ -374,8 +374,6 @@ CheckAssetInfo() {
 }
 
 CheckSelfTest() {
-    local test_state=$STATE_OK
-
     get_snmp $OID_upsTestDate
     local test_date="$result_text"
 
@@ -384,21 +382,21 @@ CheckSelfTest() {
 
     case $result_text in
 	1) OUTPUT="Self-test on $test_date passed!"
-	   return $STATE_OK
+	   STATE=$STATE_OK; return
 	   ;;
 	2) OUTPUT="Self-test on $test_date failed!"
-	   return $STATE_CRIT
+	   STATE=$STATE_CRIT; return
 	   ;;
 	3) OUTPUT="Self-test on $test_date invalid!"
-	   return $STATE_UNK
+	   STATE=$STATE_UNK; return
 	   ;;
 	4) OUTPUT="Self-test on $test_date in progress!"
-	   return $STATE_UNK
+	   STATE=$STATE_UNK; return
 	   ;;
     esac
 
     OUTPUT="Self-test on $test_date UNKNOWN"
-    return $STATE_UNK
+    STATE=$STATE_UNK
 }
 
 CheckInputLines() {
@@ -414,7 +412,6 @@ CheckOutputLines() {
 }
 
 CheckUPSAlarm() {
-    local alarm_state=$STATE_OK
     local alarm_text=""
     local alarm_desc=""
 
@@ -423,11 +420,12 @@ CheckUPSAlarm() {
 
     local counter oid_alarm_desc alarm_time
     if (( $number_alarms == 0 )); then
+	STATE=$STATE_OK
 	OUTPUT="No alarms present."
     elif (( $number_alarms > 0 )); then
-	counter=1
-	alarm_state=$STATE_CRIT
+	STATE=$STATE_CRIT
 
+	counter=1
 	while (( $counter <= $number_alarms )); do
 	    get_snmp $OID_upsAlarmDescr.$counter
 	    oid_alarm_desc="$result_text"
@@ -447,18 +445,14 @@ CheckUPSAlarm() {
 	done
 
     else
-	alarm_state=$STATE_UNK
+	STATE=$STATE_UNK
     fi
 
     OUTPUT="$number_alarms alarms present.$alarm_text"
     PERFDATA="alarms=$number_alarms"
-
-    return $alarm_state
 }
 
 CheckAmbientTemp() {
-    local temp_state=$STATE_OK
-
     if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
 	exit $STATE_UNK
@@ -479,21 +473,17 @@ CheckAmbientTemp() {
     PERFDATA="temperature=$ambient_temp;$WARNING;$CRITICAL"
 
     if (( $ambient_temp > $CRITICAL )); then
-	temp_state=$STATE_CRIT
+	STATE=$STATE_CRIT
     elif (( $ambient_temp >= $WARNING )); then
-	temp_state=$STATE_WARN
+	STATE=$STATE_WARN
     elif (( $ambient_temp < $WARNING )); then
-	temp_state=$STATE_OK
+	STATE=$STATE_OK
     else
-	temp_state=$STATE_UNK
+	STATE=$STATE_UNK
     fi
-
-    return $temp_state
 }
 
 CheckBatteryTemp() {
-    local battery_state=$STATE_OK
-
     if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
 	exit $STATE_UNK
@@ -508,20 +498,18 @@ CheckBatteryTemp() {
     PERFDATA="temperature=$battery_temp;$WARNING;$CRITICAL"
 
     if (( $battery_temp > $CRITICAL )); then
-	battery_state=$STATE_CRIT
+	STATE=$STATE_CRIT
     elif (( $battery_temp >= $WARNING )); then
-	battery_state=$STATE_WARN
+	STATE=$STATE_WARN
     elif (( $battery_temp < $WARNING )); then
-	battery_state=$STATE_OK
+	STATE=$STATE_OK
     else
-	battery_state=$STATE_UNK
+	STATE=$STATE_UNK
     fi
-
-    return $battery_state
 }
 
 CheckOutputLoad() {
-    local load_state=$STATE_OK
+    STATE=$STATE_OK
 
     if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
@@ -561,20 +549,20 @@ CheckOutputLoad() {
     for valor in ${PERCENT_LOAD[*]}; do
 
 	if (( ${PERCENT_LOAD[$counter]} > $CRITICAL )); then
-	    load_state=$STATE_CRIT
+	    STATE=$STATE_CRIT
 	    flag=3
 	elif (( ${PERCENT_LOAD[$counter]} > $WARNING )); then
 	    if (( $flag <= 2 )); then
-		load_state=$STATE_WARN
+		STATE=$STATE_WARN
 		flag=2
 	    fi
 	elif (( ${PERCENT_LOAD[$counter]} <= $WARNING )); then
 	    if (( $flag <= 0 )); then
-		load_state=$STATE_OK
+		STATE=$STATE_OK
 	    fi
 	else
 	    if (( $flag <= 1 )); then
-		load_state=$STATE_UNK
+		STATE=$STATE_UNK
 		flag=1
 	    fi
 	fi
@@ -584,13 +572,9 @@ CheckOutputLoad() {
 	counter=$(($counter + 1))
 
     done
-
-    return $load_state
 }
 
 CheckOutputLoadDiff() {
-    local load_state=$STATE_OK
-
     if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
 	print_usage
@@ -641,20 +625,18 @@ CheckOutputLoadDiff() {
     OUTPUT="Minimum load L${minline}=${min}%. Maximum load L${maxline}=${max}%. Diff: $loaddiff"
 
     if (( "$loaddiff" > $CRITICAL )); then
-	load_state=$STATE_CRIT
+	STATE=$STATE_CRIT
     elif (( "$loaddiff" > $WARNING )); then
-	load_state=$STATE_CRIT
+	STATE=$STATE_CRIT
     else
-	load_state=$STATE_OK
+	STATE=$STATE_OK
     fi
 
     PERFDATA="Ldiff=$loaddiff;$WARNING;$CRITICAL;0;100 "
-
-    return $load_state
 }
 
 CheckInputVoltage() {
-    local voltage_state=$STATE_OK
+    STATE=$STATE_OK
 
     if [[ -z "$WARNING" || -z "$CRITICAL" ]]; then
 	echo "No WARNING or CRITICAL value specified!"
@@ -697,28 +679,28 @@ CheckInputVoltage() {
     local valor
     for valor in ${VOLTAGE[*]}; do
 	if (( ${VOLTAGE[$counter]} > $critical_up )); then
-	    voltage_state=$STATE_CRIT
+	    STATE=$STATE_CRIT
 	    flag=3
 	elif (( ${VOLTAGE[$counter]} < $critical_down )); then
-	    voltage_state=$STATE_CRIT
+	    STATE=$STATE_CRIT
 	    flag=3
 	elif (( ${VOLTAGE[$counter]} > $warning_up )); then
 	    if (( $flag <= 2 )); then
-		voltage_state=$STATE_WARN
+		STATE=$STATE_WARN
 		flag=2
 	    fi
 	elif (( ${VOLTAGE[$counter]} < $warning_down )); then
 	    if (( $flag <= 2 )); then
-		voltage_state=$STATE_WARN
+		STATE=$STATE_WARN
 		flag=2
 	    fi
 	elif (( ${VOLTAGE[$counter]} <= $warning_up )); then
 	    if (( $flag <= 0 )); then
-		voltage_state=$STATE_OK
+		STATE=$STATE_OK
 	    fi
 	else
 	    if (( $flag <= 1 )); then
-		voltage_state=$STATE_UNK
+		STATE=$STATE_UNK
 		flag=1
 	    fi
 	fi
@@ -728,34 +710,30 @@ CheckInputVoltage() {
 	counter=$(($counter + 1))
 
     done
-
-    return $voltage_state
 }
 
 CheckBatteryStatus() {
     get_snmp $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator
     case "$result_text" in
 	1)	OUTPUT="Battery Status Unknown."
-		return $STATE_UNK
+		STATE=$STATE_UNK; return
 		;;
 	2)	OUTPUT="Battery Status Normal."
-		return $STATE_OK
+		STATE=$STATE_OK; return
 		;;
 	3) 	OUTPUT="Battery Status Low."
-		return $STATE_WARN
+		STATE=$STATE_WARN; return
 		;;
 	4) 	OUTPUT="Battery Status Depleted."
-		return $STATE_CRIT
+		STATE=$STATE_CRIT; return
 		;;
     esac
 
     OUTPUT="Battery Status invalid."
-    return $STATE_UNK
+    STATE=$STATE_UNK
 }
 
 CheckBatteryCharge() {
-    local battery_state=$STATE_OK
-
     if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
 	print_usage
@@ -774,16 +752,14 @@ CheckBatteryCharge() {
     PERFDATA="charge=${percent_charge}%;$WARNING;$CRITICAL;; time_to_depleted=${value_secs}s;;;0;"
 
     if (( $percent_charge <= $CRITICAL )); then
-	battery_state=$STATE_CRIT
+	STATE=$STATE_CRIT
     elif (( $percent_charge <= $WARNING )); then
-	battery_state=$STATE_WARN
+	STATE=$STATE_WARN
     elif (( $percent_charge > $WARNING )); then
-	battery_state=$STATE_OK
+	STATE=$STATE_OK
     else
-	battery_state=$STATE_UNK
+	STATE=$STATE_UNK
     fi
-
-    return $battery_state
 }
 
 get_snmp() {
@@ -910,25 +886,25 @@ if [[ -n "$CHECK_TYPE" ]]; then
     # Determine the check to perform
     case "$CHECK_TYPE" in
 	alarm)
-	    STATE=0; CheckUPSAlarm || STATE=$?
+	    CheckUPSAlarm
 	    ;;
 	asset)
 	    CheckAssetInfo
 	    ;;
 	atemp|ambient)
-	    STATE=0; CheckAmbientTemp || STATE=$?
+	    CheckAmbientTemp
 	    ;;
 	btemp|temp)
-	    STATE=0; CheckBatteryTemp || STATE=$?
+	    CheckBatteryTemp
 	    ;;
 	load)
-	    STATE=0; CheckOutputLoad || STATE=$?
+	    CheckOutputLoad
 	    ;;
 	load_diff)
-	    STATE=0; CheckOutputLoadDiff || STATE=$?
+	    CheckOutputLoadDiff
 	    ;;
 	voltage)
-	    STATE=0; CheckInputVoltage || STATE=$?
+	    CheckInputVoltage
 	    ;;
 	input_lines)
 	    CheckInputLines
@@ -937,13 +913,13 @@ if [[ -n "$CHECK_TYPE" ]]; then
 	    CheckOutputLines
 	    ;;
 	selftest)
-	    STATE=0; CheckSelfTest || STATE=$?
+	    CheckSelfTest
 	    ;;
 	status)
-	    STATE=0; CheckBatteryStatus || STATE=$?
+	    CheckBatteryStatus
 	    ;;
 	charge)
-	    STATE=0; CheckBatteryCharge || STATE=$?
+	    CheckBatteryCharge
 	    ;;
 	*) # If no check was passed, or something is wrong, let's scram!
 	    echo "Unknown parameter: $CHECK_TYPE"
