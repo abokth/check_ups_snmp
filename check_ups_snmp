@@ -787,12 +787,16 @@ get_snmp() {
 	snmpget_command=("snmpget" "-v" "$SNMPVERSION" "-Oavq" "-c" "$COMMUNITY" "$HOST_NAME" "$1")
     fi
 
-    if RESULT_TEXT=$("${snmpget_command[@]}"); then
-	result_text="${RESULT_TEXT//\"}"
-    else
-	echo "Plugin $APPNAME failure - snmpget command error. ${RESULT_TEXT//\"}"
-	exit $STATE_UNK
-    fi
+    for try in 0 10 30 90; do
+	sleep $try
+	if RESULT_TEXT=$("${snmpget_command[@]}"); then
+	    result_text="${RESULT_TEXT//\"}"
+	    return 0
+	fi
+    done
+
+    echo "Plugin $APPNAME failure - snmpget command error. ${RESULT_TEXT//\"}"
+    exit $STATE_UNK
 }
 
 ## MAIN PROGRAM CODE ##
