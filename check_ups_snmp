@@ -717,29 +717,24 @@ function CheckInputVoltage() {
 }
 
 function CheckBatteryStatus() {
-    local battery_state=$STATE_OK
     get_snmp $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator
-    local battery_status="$result_text"
-    local battery_status_text
-
-    case $battery_status in
-	1)	battery_status_text="Unknown"
-		battery_state=$STATE_UNK
+    case "$result_text" in
+	1)	OUTPUT="Battery Status Unknown."
+		return $STATE_UNK
 		;;
-	2)	battery_status_text="Normal"
-		battery_state=$STATE_OK
+	2)	OUTPUT="Battery Status Normal."
+		return $STATE_OK
 		;;
-	3) 	battery_status_text="Low"
-		battery_state=$STATE_WARN
+	3) 	OUTPUT="Battery Status Low."
+		return $STATE_WARN
 		;;
-	4) battery_status_text="Depleted"
-	   battery_state=$STATE_CRIT
-	   ;;
+	4) 	OUTPUT="Battery Status Depleted."
+		return $STATE_CRIT
+		;;
     esac
 
-    OUTPUT="Battery Status $battery_status_text."
-
-    return $battery_state
+    OUTPUT="Battery Status invalid."
+    return $STATE_UNK
 }
 
 function CheckBatteryCharge() {
