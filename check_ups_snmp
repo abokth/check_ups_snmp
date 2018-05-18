@@ -499,7 +499,7 @@ function CheckUPSAlarm() {
 function CheckAmbientTemp() {
     TEMP_STATE=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
+    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
 	echo "No WARNING or CRITICAL value specified!"
 	exit $STATE_UNK
     fi
@@ -543,7 +543,7 @@ function CheckAmbientTemp() {
 function CheckBatteryTemp() {
     BATTERY_STATE=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
+    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
 	echo "No WARNING or CRITICAL value specified!"
 	exit $STATE_UNK
     fi
@@ -575,7 +575,7 @@ function CheckBatteryTemp() {
 function CheckOutputLoad() {
     LOAD_STATE=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
+    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
 	echo "No WARNING or CRITICAL value specified!"
 	print_usage
 	exit $STATE_UNK
@@ -643,7 +643,7 @@ function CheckOutputLoad() {
 function CheckOutputLoadDiff() {
     LOAD_STATE=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
+    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
 	echo "No WARNING or CRITICAL value specified!"
 	print_usage
 	exit $STATE_UNK
@@ -817,7 +817,7 @@ function CheckBatteryStatus() {
 function CheckBatteryCharge() {
     BATTERY_STATE=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] | [[ $CRITICAL -eq 0 ]]; then
+    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
 	echo "No WARNING or CRITICAL value specified!"
 	print_usage
 	exit $STATE_UNK
