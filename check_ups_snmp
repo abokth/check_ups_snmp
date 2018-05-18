@@ -529,7 +529,14 @@ CheckOutputLoad() {
 	exit $STATE_UNK
     fi
 
-    get_snmp $OID_upsOutputNumLines
+    local try
+    for try in 0 10 20; do
+	sleep $try
+	get_snmp $OID_upsOutputNumLines
+	if (( $result_text > 0 )); then
+	    break
+	fi
+    done
     local number_lines="$result_text"
 
     if (( $number_lines <= 0 )); then
@@ -590,7 +597,14 @@ CheckOutputLoadDiff() {
 	exit $STATE_UNK
     fi
 
-    get_snmp $OID_upsOutputNumLines
+    local try
+    for try in 0 10 20; do
+	sleep $try
+	get_snmp $OID_upsOutputNumLines
+	if (( $result_text > 0 )); then
+	    break
+	fi
+    done
     local number_lines="$result_text"
 
     if (( $number_lines <= 0 )); then
@@ -648,7 +662,14 @@ CheckInputVoltage() {
 	exit $STATE_UNK
     fi
 
-    get_snmp $OID_upsInputNumLines
+    local try
+    for try in 0 10 20; do
+	sleep $try
+	get_snmp $OID_upsInputNumLines
+	if (( $result_text > 0 )); then
+	    break
+	fi
+    done
     local number_lines="$result_text"
 
     if (( $number_lines <= 0 )); then
@@ -774,6 +795,7 @@ get_snmp() {
 	snmpget_command=("snmpget" "-v" "$SNMPVERSION" "-Oavq" "-c" "$COMMUNITY" "$HOST_NAME" "$1")
     fi
 
+    local try
     for try in 0 10 30 90; do
 	sleep $try
 	if RESULT_TEXT=$("${snmpget_command[@]}"); then
