@@ -373,7 +373,7 @@ CheckAssetInfo() {
     fi
 }
 
-function CheckSelfTest() {
+CheckSelfTest() {
     local test_state=$STATE_OK
 
     get_snmp $OID_upsTestDate
@@ -413,7 +413,7 @@ CheckOutputLines() {
     PERFDATA="lines=$result_text"
 }
 
-function CheckUPSAlarm() {
+CheckUPSAlarm() {
     local alarm_state=$STATE_OK
     local alarm_text=""
     local alarm_desc=""
@@ -422,9 +422,9 @@ function CheckUPSAlarm() {
     local number_alarms="$result_text"
 
     local counter oid_alarm_desc alarm_time
-    if [[ $number_alarms -eq 0 ]]; then
+    if (( $number_alarms == 0 )); then
 	OUTPUT="No alarms present."
-    elif [[ $number_alarms -gt 0 ]]; then
+    elif (( $number_alarms > 0 )); then
 	counter=1
 	alarm_state=$STATE_CRIT
 
@@ -456,10 +456,10 @@ function CheckUPSAlarm() {
     return $alarm_state
 }
 
-function CheckAmbientTemp() {
+CheckAmbientTemp() {
     local temp_state=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
+    if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
 	exit $STATE_UNK
     fi
@@ -478,11 +478,11 @@ function CheckAmbientTemp() {
     OUTPUT="$probe_name: $ambient_temp degrees C ($temp_fahrenheit degrees F), $humidity_value % humidity."
     PERFDATA="temperature=$ambient_temp;$WARNING;$CRITICAL"
 
-    if [[ $ambient_temp -gt $CRITICAL ]]; then
+    if (( $ambient_temp > $CRITICAL )); then
 	temp_state=$STATE_CRIT
-    elif [[ $ambient_temp -ge $WARNING ]]; then
+    elif (( $ambient_temp >= $WARNING )); then
 	temp_state=$STATE_WARN
-    elif [[ $ambient_temp -lt $WARNING ]]; then
+    elif (( $ambient_temp < $WARNING )); then
 	temp_state=$STATE_OK
     else
 	temp_state=$STATE_UNK
@@ -491,10 +491,10 @@ function CheckAmbientTemp() {
     return $temp_state
 }
 
-function CheckBatteryTemp() {
+CheckBatteryTemp() {
     local battery_state=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
+    if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
 	exit $STATE_UNK
     fi
@@ -507,11 +507,11 @@ function CheckBatteryTemp() {
     OUTPUT="Battery Temperature is $battery_temp degrees C ($temp_fahrenheit degrees F)."
     PERFDATA="temperature=$battery_temp;$WARNING;$CRITICAL"
 
-    if [[ $battery_temp -gt $CRITICAL ]]; then
+    if (( $battery_temp > $CRITICAL )); then
 	battery_state=$STATE_CRIT
-    elif [[ $battery_temp -ge $WARNING ]]; then
+    elif (( $battery_temp >= $WARNING )); then
 	battery_state=$STATE_WARN
-    elif [[ $battery_temp -lt $WARNING ]]; then
+    elif (( $battery_temp < $WARNING )); then
 	battery_state=$STATE_OK
     else
 	battery_state=$STATE_UNK
@@ -520,10 +520,10 @@ function CheckBatteryTemp() {
     return $battery_state
 }
 
-function CheckOutputLoad() {
+CheckOutputLoad() {
     local load_state=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
+    if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
 	print_usage
 	exit $STATE_UNK
@@ -532,15 +532,14 @@ function CheckOutputLoad() {
     get_snmp $OID_upsOutputNumLines
     local number_lines="$result_text"
 
-    if [[ $number_lines -le 0 ]]; then
+    if (( $number_lines <= 0 )); then
 	echo "Error! Number of lines=$number_lines"
 	exit $STATE_UNK
     fi
 
     local counter=1 PERCENT_LOAD
 
-    while [[ $counter -le $number_lines ]]
-    do
+    while (( $counter <= $number_lines )); do
 	get_snmp $OID_upsOutputPercentLoad.$counter
 	PERCENT_LOAD[$counter]="$result_text"
 
@@ -552,23 +551,22 @@ function CheckOutputLoad() {
     local flag=0
 
     local valor
-    for valor in ${PERCENT_LOAD[*]}
-    do
+    for valor in ${PERCENT_LOAD[*]}; do
 
-	if [[ ${PERCENT_LOAD[$counter]} -gt $CRITICAL ]]; then
+	if (( ${PERCENT_LOAD[$counter]} > $CRITICAL )); then
 	    load_state=$STATE_CRIT
 	    flag=3
-	elif [[ ${PERCENT_LOAD[$counter]} -gt $WARNING ]]; then
+	elif (( ${PERCENT_LOAD[$counter]} > $WARNING )); then
 	    if (( $flag <= 2 )); then
 		load_state=$STATE_WARN
 		flag=2
 	    fi
-	elif [[ ${PERCENT_LOAD[$counter]} -le $WARNING ]]; then
+	elif (( ${PERCENT_LOAD[$counter]} <= $WARNING )); then
 	    if (( $flag <= 0 )); then
 		load_state=$STATE_OK
 	    fi
 	else
-	    if [[ $flag -le 1 ]]; then
+	    if (( $flag <= 1 )); then
 		load_state=$STATE_UNK
 		flag=1
 	    fi
@@ -583,10 +581,10 @@ function CheckOutputLoad() {
     return $load_state
 }
 
-function CheckOutputLoadDiff() {
+CheckOutputLoadDiff() {
     local load_state=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
+    if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
 	print_usage
 	exit $STATE_UNK
@@ -595,7 +593,7 @@ function CheckOutputLoadDiff() {
     get_snmp $OID_upsOutputNumLines
     local number_lines="$result_text"
 
-    if [[ $number_lines -le 0 ]]; then
+    if (( $number_lines <= 0 )); then
 	echo "Error! Number of lines=$number_lines"
 	exit $STATE_UNK
     fi
@@ -608,8 +606,7 @@ function CheckOutputLoadDiff() {
     local maxline=""
     local line_percent_load
 
-    while [[ $counter -le $number_lines ]]
-    do
+    while (( $counter <= $number_lines )); do
 	get_snmp $OID_upsOutputPercentLoad.$counter
 	line_percent_load="$result_text"
 
@@ -642,7 +639,7 @@ function CheckOutputLoadDiff() {
     return $load_state
 }
 
-function CheckInputVoltage() {
+CheckInputVoltage() {
     local voltage_state=$STATE_OK
 
     if [[ -z "$WARNING" || -z "$CRITICAL" ]]; then
@@ -654,15 +651,14 @@ function CheckInputVoltage() {
     get_snmp $OID_upsInputNumLines
     local number_lines="$result_text"
 
-    if [[ $number_lines -le 0 ]]; then
+    if (( $number_lines <= 0 )); then
 	echo "Error! Number of lines=$number_lines"
 	exit $STATE_UNK
     fi
 
     local counter=1
 
-    while [[ $counter -le $number_lines ]]
-    do
+    while (( $counter <= $number_lines )); do
 	get_snmp $OID_upsInputVoltage.$counter
 	VOLTAGE[$counter]="$result_text"
 
@@ -678,30 +674,29 @@ function CheckInputVoltage() {
     local critical_down="${CRITICAL%:*}"
 
     local valor
-    for valor in ${VOLTAGE[*]}
-    do
-	if [[ ${VOLTAGE[$counter]} -gt $critical_up ]]; then
+    for valor in ${VOLTAGE[*]}; do
+	if (( ${VOLTAGE[$counter]} > $critical_up )); then
 	    voltage_state=$STATE_CRIT
 	    flag=3
-	elif [[ ${VOLTAGE[$counter]} -lt $critical_down ]]; then
+	elif (( ${VOLTAGE[$counter]} < $critical_down )); then
 	    voltage_state=$STATE_CRIT
 	    flag=3
-	elif [[ ${VOLTAGE[$counter]} -gt $warning_up ]]; then
+	elif (( ${VOLTAGE[$counter]} > $warning_up )); then
 	    if (( $flag <= 2 )); then
 		voltage_state=$STATE_WARN
 		flag=2
 	    fi
-	elif [[ ${VOLTAGE[$counter]} -lt $warning_down ]]; then
+	elif (( ${VOLTAGE[$counter]} < $warning_down )); then
 	    if (( $flag <= 2 )); then
 		voltage_state=$STATE_WARN
 		flag=2
 	    fi
-	elif [[ ${VOLTAGE[$counter]} -le $warning_up ]]; then
+	elif (( ${VOLTAGE[$counter]} <= $warning_up )); then
 	    if (( $flag <= 0 )); then
 		voltage_state=$STATE_OK
 	    fi
 	else
-	    if [[ $flag -le 1 ]]; then
+	    if (( $flag <= 1 )); then
 		voltage_state=$STATE_UNK
 		flag=1
 	    fi
@@ -716,7 +711,7 @@ function CheckInputVoltage() {
     return $voltage_state
 }
 
-function CheckBatteryStatus() {
+CheckBatteryStatus() {
     get_snmp $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator
     case "$result_text" in
 	1)	OUTPUT="Battery Status Unknown."
@@ -737,10 +732,10 @@ function CheckBatteryStatus() {
     return $STATE_UNK
 }
 
-function CheckBatteryCharge() {
+CheckBatteryCharge() {
     local battery_state=$STATE_OK
 
-    if [[ $WARNING -eq 0 ]] || [[ $CRITICAL -eq 0 ]]; then
+    if (( $WARNING == 0 )) || (( $CRITICAL == 0 )); then
 	echo "No WARNING or CRITICAL value specified!"
 	print_usage
 	exit $STATE_UNK
@@ -757,11 +752,11 @@ function CheckBatteryCharge() {
     OUTPUT="Estimated battery charge $percent_charge%, approximately $battery_charge minutes runtime remaining."
     PERFDATA="charge=${percent_charge}%;$WARNING;$CRITICAL;; time_to_depleted=${value_secs}s;;;0;"
 
-    if [[ $percent_charge -le $CRITICAL ]]; then
+    if (( $percent_charge <= $CRITICAL )); then
 	battery_state=$STATE_CRIT
-    elif [[ $percent_charge -le $WARNING ]]; then
+    elif (( $percent_charge <= $WARNING )); then
 	battery_state=$STATE_WARN
-    elif [[ $percent_charge -gt $WARNING ]]; then
+    elif (( $percent_charge > $WARNING )); then
 	battery_state=$STATE_OK
     else
 	battery_state=$STATE_UNK
@@ -773,7 +768,7 @@ function CheckBatteryCharge() {
 get_snmp() {
     local -a snmpget_command
 
-    if [[ $SNMPVERSION = 3 ]]; then
+    if [[ $SNMPVERSION == "3" ]]; then
 	snmpget_command=("snmpget" "-v" "$SNMPVERSION" "-Oavq" "-u" "$SNMPUSER" "-l" "$PRIVILEGELEVEL" "-x" "$PRIVACYPROTOCOL" "-X" "$PRIVACYPASSWORD" "-a" "$AUTHPROTOCOL" "-A" "$AUTHPASSWORD" "$HOST_NAME" "$1")
     else
 	snmpget_command=("snmpget" "-v" "$SNMPVERSION" "-Oavq" "-c" "$COMMUNITY" "$HOST_NAME" "$1")
@@ -806,13 +801,13 @@ done
 
 
 # Check to see if any parameters were passed
-if [[ $# -eq 0 ]]; then
+if (( $# == 0 )); then
     print_usage
     exit $STATE_UNK
 fi
 
 # Parse parameters and assign values to variable as needed
-while test -n "$1"; do
+while [[ -n "$1" ]]; do
 
     case "$1" in
 	--host|-H)
