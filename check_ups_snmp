@@ -349,19 +349,19 @@ OID_iemStatusProbeCurrentHumid='1.3.6.1.4.1.318.1.1.10.2.3.2.1.6.1'
 
 CheckAssetInfo() {
     #get_snmp $OID_upsIdentManufacturer
-    #local make="$result_text"
+    #local make="$RESULT_TEXT"
 
     get_snmp $OID_upsIdentModel
-    local model="$result_text"
+    local model="$RESULT_TEXT"
 
     #get_snmp $OID_upsIdentUPSSoftwareVersion
-    #local firmware="$result_text"
+    #local firmware="$RESULT_TEXT"
 
     get_snmp $OID_upsAdvIdentSerialNumber
-    local serial_num="$result_text"
+    local serial_num="$RESULT_TEXT"
 
     get_snmp $OID_upsBasicIdentModel
-    local product="$result_text"
+    local product="$RESULT_TEXT"
 
     #!!! How to get firmware to handle the spaces / special characters???
     OUTPUT="$NAME $model"
@@ -375,12 +375,12 @@ CheckAssetInfo() {
 
 CheckSelfTest() {
     get_snmp $OID_upsTestDate
-    local test_date="$result_text"
+    local test_date="$RESULT_TEXT"
 
     get_snmp $OID_upsTestResult
-    PERFDATA="test_result=$result_text"
+    PERFDATA="test_result=$RESULT_TEXT"
 
-    case $result_text in
+    case $RESULT_TEXT in
 	1) OUTPUT="Self-test on $test_date passed!"
 	   STATE=$STATE_OK; return
 	   ;;
@@ -401,14 +401,14 @@ CheckSelfTest() {
 
 CheckInputLines() {
     get_snmp $OID_upsInputNumLines
-    OUTPUT="Number of input lines = $result_text"
-    PERFDATA="lines=$result_text"
+    OUTPUT="Number of input lines = $RESULT_TEXT"
+    PERFDATA="lines=$RESULT_TEXT"
 }
 
 CheckOutputLines() {
     get_snmp $OID_upsOutputNumLines
-    OUTPUT="Number of output lines = $result_text"
-    PERFDATA="lines=$result_text"
+    OUTPUT="Number of output lines = $RESULT_TEXT"
+    PERFDATA="lines=$RESULT_TEXT"
 }
 
 CheckUPSAlarm() {
@@ -416,7 +416,7 @@ CheckUPSAlarm() {
     local alarm_desc=""
 
     get_snmp $OID_upsAlarmsPresent
-    local number_alarms="$result_text"
+    local number_alarms="$RESULT_TEXT"
 
     local counter oid_alarm_desc alarm_time
     if (( $number_alarms == 0 )); then
@@ -428,7 +428,7 @@ CheckUPSAlarm() {
 	counter=1
 	while (( $counter <= $number_alarms )); do
 	    get_snmp $OID_upsAlarmDescr.$counter
-	    oid_alarm_desc="$result_text"
+	    oid_alarm_desc="$RESULT_TEXT"
 
 	    alarm_desc=$(snmptranslate -M $MIBS_PATH -m ALL $oid_alarm_desc | awk -F:: '{print $2}') || alarm_desc=""
 	    if [[ -z "$alarm_desc" ]]; then
@@ -436,7 +436,7 @@ CheckUPSAlarm() {
 	    fi
 
 	    get_snmp $OID_upsAlarmTime.$counter
-	    alarm_time="$result_text"
+	    alarm_time="$RESULT_TEXT"
 
 	    # work on checking return codes and use if/then so output fits what's available
 
@@ -459,15 +459,15 @@ CheckAmbientTemp() {
     fi
 
     get_snmp $OID_iemStatusProbeName
-    local probe_name="$result_text"
+    local probe_name="$RESULT_TEXT"
 
     get_snmp $OID_iemStatusProbeCurrentTemp
-    local ambient_temp="$result_text"
+    local ambient_temp="$RESULT_TEXT"
     #temp_fahrenheit=$((9 * $ambient_temp / 5 + 32))
     local temp_fahrenheit=$( <<<"scale=1;9*$ambient_temp/5+32" bc -l )
 
     get_snmp $OID_iemStatusProbeCurrentHumid
-    local humidity_value="$result_text"
+    local humidity_value="$RESULT_TEXT"
 
     OUTPUT="$probe_name: $ambient_temp degrees C ($temp_fahrenheit degrees F), $humidity_value % humidity."
     PERFDATA="temperature=$ambient_temp;$WARNING;$CRITICAL"
@@ -490,7 +490,7 @@ CheckBatteryTemp() {
     fi
 
     get_snmp $OID_upsBatteryTemperature
-    local battery_temp="$result_text"
+    local battery_temp="$RESULT_TEXT"
     #	temp_fahrenheit=$((9 * $battery_temp / 5 + 32))
     local temp_fahrenheit=$( <<<"scale=1;9*$battery_temp/5+32" bc -l)
 
@@ -521,11 +521,11 @@ CheckOutputLoad() {
     for try in 0 10 20; do
 	sleep $try
 	get_snmp $OID_upsOutputNumLines
-	if (( $result_text > 0 )); then
+	if (( $RESULT_TEXT > 0 )); then
 	    break
 	fi
     done
-    local number_lines="$result_text"
+    local number_lines="$RESULT_TEXT"
 
     if (( $number_lines <= 0 )); then
 	echo "Error! Number of lines=$number_lines"
@@ -536,7 +536,7 @@ CheckOutputLoad() {
 
     while (( $counter <= $number_lines )); do
 	get_snmp $OID_upsOutputPercentLoad.$counter
-	PERCENT_LOAD[$counter]="$result_text"
+	PERCENT_LOAD[$counter]="$RESULT_TEXT"
 
 	counter=$(($counter + 1))
     done
@@ -585,11 +585,11 @@ CheckOutputLoadDiff() {
     for try in 0 10 20; do
 	sleep $try
 	get_snmp $OID_upsOutputNumLines
-	if (( $result_text > 0 )); then
+	if (( $RESULT_TEXT > 0 )); then
 	    break
 	fi
     done
-    local number_lines="$result_text"
+    local number_lines="$RESULT_TEXT"
 
     if (( $number_lines <= 0 )); then
 	echo "Error! Number of lines=$number_lines"
@@ -606,7 +606,7 @@ CheckOutputLoadDiff() {
 
     while (( $counter <= $number_lines )); do
 	get_snmp $OID_upsOutputPercentLoad.$counter
-	line_percent_load="$result_text"
+	line_percent_load="$RESULT_TEXT"
 
 	if [[ -z "$min" ]] || (( "$min" > "$line_percent_load" )); then
 	    min="$line_percent_load"
@@ -648,11 +648,11 @@ CheckInputVoltage() {
     for try in 0 10 20; do
 	sleep $try
 	get_snmp $OID_upsInputNumLines
-	if (( $result_text > 0 )); then
+	if (( $RESULT_TEXT > 0 )); then
 	    break
 	fi
     done
-    local number_lines="$result_text"
+    local number_lines="$RESULT_TEXT"
 
     if (( $number_lines <= 0 )); then
 	echo "Error! Number of lines=$number_lines"
@@ -663,7 +663,7 @@ CheckInputVoltage() {
 
     while (( $counter <= $number_lines )); do
 	get_snmp $OID_upsInputVoltage.$counter
-	VOLTAGE[$counter]="$result_text"
+	VOLTAGE[$counter]="$RESULT_TEXT"
 
 	counter=$(($counter + 1))
     done
@@ -714,7 +714,7 @@ CheckInputVoltage() {
 
 CheckBatteryStatus() {
     get_snmp $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator
-    case "$result_text" in
+    case "$RESULT_TEXT" in
 	1)	OUTPUT="Battery Status Unknown."
 		STATE=$STATE_UNK; return
 		;;
@@ -741,10 +741,10 @@ CheckBatteryCharge() {
     fi
 
     get_snmp $OID_upsEstimatedChargeRemaining
-    local percent_charge="$result_text"
+    local percent_charge="$RESULT_TEXT"
 
     get_snmp $OID_upsEstimatedMinutesRemaining
-    local battery_charge="$result_text"
+    local battery_charge="$RESULT_TEXT"
 
     local value_secs=$(($battery_charge * 60))
 
@@ -775,7 +775,7 @@ get_snmp() {
     for try in 0 10 30 90; do
 	sleep $try
 	if RESULT_TEXT=$("${snmpget_command[@]}"); then
-	    result_text="${RESULT_TEXT//\"}"
+	    RESULT_TEXT="${RESULT_TEXT//\"}"
 	    return 0
 	fi
     done
