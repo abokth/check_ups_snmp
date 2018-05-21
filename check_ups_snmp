@@ -657,7 +657,7 @@ CheckInputVoltage() {
     local -i critical_down="${CRITICAL%:*}"
 
     local v
-    for valor in "${voltage[@]}"; do
+    for v in "${voltage[@]}"; do
 	if (( v > critical_up )); then
 	    STATE=$STATE_CRIT
 	    flag=3
