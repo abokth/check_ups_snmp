@@ -6,10 +6,10 @@
 # check_ups_snmp					#
 #							#
 # Modified by Jason Leonard				#
-# 	E-mail: jason_leonard@yahoo.com			#
+#	E-mail: jason_leonard@yahoo.com			#
 #							#
 # Modified by Alexander Boström				#
-# 	E-mail: abo@kth.se				#
+#	E-mail: abo@kth.se				#
 #							#
 #							#
 # Overview						#
@@ -18,8 +18,8 @@
 # ided by Daniel Dueñas.				#
 #							#
 # This program is free software; you can redistribute	#
-# it and/or modify it under the terms of the GNU 	#
-# General Public License as published by the Free 	#
+# it and/or modify it under the terms of the GNU	#
+# General Public License as published by the Free	#
 # Software Foundation; either version 2 of the License,	#
 # or (at your option) any later	version.		#
 #							#
@@ -156,7 +156,7 @@ print_help() {
     echo ''
     echo '	load:'
     echo '		The percentage of the UPS capacity being used on the output line,'
-    echo ' 		i.e., the greater of the % capacity load and the % VA load.'
+    echo '		i.e., the greater of the % capacity load and the % VA load.'
     echo '		WARNING and CRITICAL values required! These values should be provided as % load.'
     echo ''
     echo '	output_lines:'
@@ -721,10 +721,10 @@ CheckBatteryStatus() {
 	2)	OUTPUT="Battery Status Normal."
 		STATE=$STATE_OK; return
 		;;
-	3) 	OUTPUT="Battery Status Low."
+	3)	OUTPUT="Battery Status Low."
 		STATE=$STATE_WARN; return
 		;;
-	4) 	OUTPUT="Battery Status Depleted."
+	4)	OUTPUT="Battery Status Depleted."
 		STATE=$STATE_CRIT; return
 		;;
     esac
@@ -787,7 +787,7 @@ get_snmp() {
 ## MAIN PROGRAM CODE ##
 
 # Check that all required binaries for the script are available
-# 	EXIT with an UNKNOWN status if not
+#	EXIT with an UNKNOWN status if not
 for required_binary in snmpget snmptranslate awk; do
     if type $required_binary >/dev/null; then
 	:
