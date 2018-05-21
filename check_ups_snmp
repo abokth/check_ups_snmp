@@ -377,7 +377,7 @@ CheckSelfTest() {
     get_snmp $OID_upsTestDate
     local test_date="$RESULT_TEXT"
 
-    get_snmp $OID_upsTestResult
+    get_snmp_numneric $OID_upsTestResult
     PERFDATA="test_result=$RESULT_TEXT"
 
     case $RESULT_TEXT in
@@ -400,13 +400,13 @@ CheckSelfTest() {
 }
 
 CheckInputLines() {
-    get_snmp $OID_upsInputNumLines
+    get_snmp_numeric $OID_upsInputNumLines
     OUTPUT="Number of input lines = $RESULT_TEXT"
     PERFDATA="lines=$RESULT_TEXT"
 }
 
 CheckOutputLines() {
-    get_snmp $OID_upsOutputNumLines
+    get_snmp_numeric $OID_upsOutputNumLines
     OUTPUT="Number of output lines = $RESULT_TEXT"
     PERFDATA="lines=$RESULT_TEXT"
 }
@@ -414,19 +414,20 @@ CheckOutputLines() {
 CheckUPSAlarm() {
     local alarm_text=""
     local alarm_desc=""
+    local oid_alarm_desc alarm_time
+    local -i counter
 
-    get_snmp $OID_upsAlarmsPresent
-    local number_alarms="$RESULT_TEXT"
+    get_snmp_numeric $OID_upsAlarmsPresent
+    local -i number_alarms="$RESULT_TEXT"
 
-    local counter oid_alarm_desc alarm_time
-    if (( $number_alarms == 0 )); then
+    if (( number_alarms == 0 )); then
 	STATE=$STATE_OK
 	OUTPUT="No alarms present."
-    elif (( $number_alarms > 0 )); then
+    elif (( number_alarms > 0 )); then
 	STATE=$STATE_CRIT
 
 	counter=1
-	while (( $counter <= $number_alarms )); do
+	while (( counter <= number_alarms )); do
 	    get_snmp $OID_upsAlarmDescr.$counter
 	    oid_alarm_desc="$RESULT_TEXT"
 
@@ -440,8 +441,8 @@ CheckUPSAlarm() {
 
 	    # work on checking return codes and use if/then so output fits what's available
 
-	    alarm_text="$alarm_text Alarm $COUNT: $alarm_desc $alarm_time"
-	    counter=$(($counter + 1))
+	    alarm_text="$alarm_text Alarm $counter: $alarm_desc $alarm_time"
+	    counter=$((counter + 1))
 	done
 
     else
@@ -461,22 +462,22 @@ CheckAmbientTemp() {
     get_snmp $OID_iemStatusProbeName
     local probe_name="$RESULT_TEXT"
 
-    get_snmp $OID_iemStatusProbeCurrentTemp
-    local ambient_temp="$RESULT_TEXT"
+    get_snmp_numeric $OID_iemStatusProbeCurrentTemp
+    local -i ambient_temp="$RESULT_TEXT"
     #temp_fahrenheit=$((9 * $ambient_temp / 5 + 32))
     local temp_fahrenheit=$( <<<"scale=1;9*$ambient_temp/5+32" bc -l )
 
-    get_snmp $OID_iemStatusProbeCurrentHumid
-    local humidity_value="$RESULT_TEXT"
+    get_snmp_numeric $OID_iemStatusProbeCurrentHumid
+    local -i humidity_value="$RESULT_TEXT"
 
     OUTPUT="$probe_name: $ambient_temp degrees C ($temp_fahrenheit degrees F), $humidity_value % humidity."
     PERFDATA="temperature=$ambient_temp;$WARNING;$CRITICAL"
 
-    if (( $ambient_temp > $CRITICAL )); then
+    if (( ambient_temp > $CRITICAL )); then
 	STATE=$STATE_CRIT
-    elif (( $ambient_temp >= $WARNING )); then
+    elif (( ambient_temp >= $WARNING )); then
 	STATE=$STATE_WARN
-    elif (( $ambient_temp < $WARNING )); then
+    elif (( ambient_temp < $WARNING )); then
 	STATE=$STATE_OK
     else
 	STATE=$STATE_UNK
@@ -489,19 +490,19 @@ CheckBatteryTemp() {
 	exit $STATE_UNK
     fi
 
-    get_snmp $OID_upsBatteryTemperature
-    local battery_temp="$RESULT_TEXT"
-    #	temp_fahrenheit=$((9 * $battery_temp / 5 + 32))
+    get_snmp_numeric $OID_upsBatteryTemperature
+    local -i battery_temp="$RESULT_TEXT"
+    #	temp_fahrenheit=$((9 * battery_temp / 5 + 32))
     local temp_fahrenheit=$( <<<"scale=1;9*$battery_temp/5+32" bc -l)
 
     OUTPUT="Battery Temperature is $battery_temp degrees C ($temp_fahrenheit degrees F)."
     PERFDATA="temperature=$battery_temp;$WARNING;$CRITICAL"
 
-    if (( $battery_temp > $CRITICAL )); then
+    if (( battery_temp > $CRITICAL )); then
 	STATE=$STATE_CRIT
-    elif (( $battery_temp >= $WARNING )); then
+    elif (( battery_temp >= $WARNING )); then
 	STATE=$STATE_WARN
-    elif (( $battery_temp < $WARNING )); then
+    elif (( battery_temp < $WARNING )); then
 	STATE=$STATE_OK
     else
 	STATE=$STATE_UNK
@@ -517,46 +518,39 @@ CheckOutputLoad() {
 	exit $STATE_UNK
     fi
 
-    local try
-    for try in 0 10 20; do
-	sleep $try
-	get_snmp $OID_upsOutputNumLines
-	if (( $RESULT_TEXT > 0 )); then
-	    break
-	fi
-    done
-    local number_lines="$RESULT_TEXT"
+    get_snmp_numeric $OID_upsOutputNumLines
+    local -i number_lines="$RESULT_TEXT"
 
-    if (( $number_lines <= 0 )); then
+    if (( number_lines <= 0 )); then
 	echo "Error! Number of lines=$number_lines"
 	exit $STATE_UNK
     fi
 
-    local counter=1 PERCENT_LOAD
+    local -i counter=1
+    local -a percent_load
 
-    while (( $counter <= $number_lines )); do
-	get_snmp $OID_upsOutputPercentLoad.$counter
-	PERCENT_LOAD[$counter]="$RESULT_TEXT"
+    while (( counter <= number_lines )); do
+	get_snmp_numeric $OID_upsOutputPercentLoad.$counter
+	percent_load[$counter]="$RESULT_TEXT"
 
-	counter=$(($counter + 1))
+	counter=$((counter + 1))
     done
 
     OUTPUT="Load % on $number_lines lines:"
-    counter=1
     local flag=0
 
-    local valor
-    for valor in ${PERCENT_LOAD[*]}; do
-
-	if (( ${PERCENT_LOAD[$counter]} > $CRITICAL )); then
+    local -i pl
+    counter=1
+    for pl in "${percent_load[@]}"; do
+	if (( pl > $CRITICAL )); then
 	    STATE=$STATE_CRIT
 	    flag=3
-	elif (( ${PERCENT_LOAD[$counter]} > $WARNING )); then
+	elif (( pl > $WARNING )); then
 	    if (( $flag <= 2 )); then
 		STATE=$STATE_WARN
 		flag=2
 	    fi
-	elif (( ${PERCENT_LOAD[$counter]} <= $WARNING )); then
+	elif (( pl <= $WARNING )); then
 	    if (( $flag <= 0 )); then
 		STATE=$STATE_OK
 	    fi
@@ -567,10 +561,9 @@ CheckOutputLoad() {
 	    fi
 	fi
 
-	OUTPUT=$OUTPUT" L$counter=${PERCENT_LOAD[$counter]}%"
-	PERFDATA="${PERFDATA}L$counter=${PERCENT_LOAD[$counter]}%;$WARNING;$CRITICAL;0;100 "
-	counter=$(($counter + 1))
-
+	OUTPUT=$OUTPUT" L$counter=${pl}%"
+	PERFDATA="${PERFDATA}L$counter=${pl}%;$WARNING;$CRITICAL;0;100 "
+	counter=$((counter + 1))
     done
 }
 
@@ -581,52 +574,45 @@ CheckOutputLoadDiff() {
 	exit $STATE_UNK
     fi
 
-    local try
-    for try in 0 10 20; do
-	sleep $try
-	get_snmp $OID_upsOutputNumLines
-	if (( $RESULT_TEXT > 0 )); then
-	    break
-	fi
-    done
-    local number_lines="$RESULT_TEXT"
+    get_snmp_numeric $OID_upsOutputNumLines
+    local -i number_lines="$RESULT_TEXT"
 
-    if (( $number_lines <= 0 )); then
+    if (( number_lines <= 0 )); then
 	echo "Error! Number of lines=$number_lines"
 	exit $STATE_UNK
     fi
 
-    local counter=1
+    local -i counter=1
 
     local min=""
     local minline=""
     local max=""
     local maxline=""
-    local line_percent_load
+    local -i line_percent_load
 
-    while (( $counter <= $number_lines )); do
-	get_snmp $OID_upsOutputPercentLoad.$counter
+    while (( counter <= number_lines )); do
+	get_snmp_numeric $OID_upsOutputPercentLoad.$counter
 	line_percent_load="$RESULT_TEXT"
 
-	if [[ -z "$min" ]] || (( "$min" > "$line_percent_load" )); then
+	if [[ -z "$min" ]] || (( "$min" > line_percent_load )); then
 	    min="$line_percent_load"
 	    minline="$counter"
 	fi
-	if [[ -z "$max" ]] || (( "$max" < "$line_percent_load" )); then
+	if [[ -z "$max" ]] || (( "$max" < line_percent_load )); then
 	    max="$line_percent_load"
 	    maxline="$counter"
 	fi
 
-	counter=$(($counter + 1))
+	counter=$((counter + 1))
     done
 
-    local loaddiff=$(($max - $min))
+    local -i loaddiff=$(($max - $min))
 
     OUTPUT="Minimum load L${minline}=${min}%. Maximum load L${maxline}=${max}%. Diff: $loaddiff"
 
-    if (( "$loaddiff" > $CRITICAL )); then
+    if (( loaddiff > $CRITICAL )); then
 	STATE=$STATE_CRIT
-    elif (( "$loaddiff" > $WARNING )); then
+    elif (( loaddiff > $WARNING )); then
 	STATE=$STATE_CRIT
     else
 	STATE=$STATE_OK
@@ -644,76 +630,70 @@ CheckInputVoltage() {
 	exit $STATE_UNK
     fi
 
-    local try
-    for try in 0 10 20; do
-	sleep $try
-	get_snmp $OID_upsInputNumLines
-	if (( $RESULT_TEXT > 0 )); then
-	    break
-	fi
-    done
-    local number_lines="$RESULT_TEXT"
+    get_snmp_numeric $OID_upsInputNumLines
+    local -i number_lines="$RESULT_TEXT"
 
-    if (( $number_lines <= 0 )); then
+    if (( number_lines <= 0 )); then
 	echo "Error! Number of lines=$number_lines"
 	exit $STATE_UNK
     fi
 
-    local counter=1
+    local -i counter=1
+    local -a voltage
 
-    while (( $counter <= $number_lines )); do
-	get_snmp $OID_upsInputVoltage.$counter
-	VOLTAGE[$counter]="$RESULT_TEXT"
+    while (( counter <= number_lines )); do
+	get_snmp_numeric $OID_upsInputVoltage.$counter
+	voltage[$counter]="$RESULT_TEXT"
 
-	counter=$(($counter + 1))
+	counter=$((counter + 1))
     done
 
     OUTPUT="Voltage on $number_lines input lines:"
     counter=1
-    local flag=0
-    local warning_up="${WARNING#*:}"
-    local warning_down="${WARNING%:*}"
-    local critical_up="${CRITICAL#*:}"
-    local critical_down="${CRITICAL%:*}"
+    local -i flag=0
+    local -i warning_up="${WARNING#*:}"
+    local -i warning_down="${WARNING%:*}"
+    local -i critical_up="${CRITICAL#*:}"
+    local -i critical_down="${CRITICAL%:*}"
 
-    local valor
-    for valor in ${VOLTAGE[*]}; do
-	if (( ${VOLTAGE[$counter]} > $critical_up )); then
+    local v
+    for valor in "${voltage[@]}"; do
+	if (( v > critical_up )); then
 	    STATE=$STATE_CRIT
 	    flag=3
-	elif (( ${VOLTAGE[$counter]} < $critical_down )); then
+	elif (( v < critical_down )); then
 	    STATE=$STATE_CRIT
 	    flag=3
-	elif (( ${VOLTAGE[$counter]} > $warning_up )); then
-	    if (( $flag <= 2 )); then
+	elif (( v > warning_up )); then
+	    if (( flag <= 2 )); then
 		STATE=$STATE_WARN
 		flag=2
 	    fi
-	elif (( ${VOLTAGE[$counter]} < $warning_down )); then
-	    if (( $flag <= 2 )); then
+	elif (( v < warning_down )); then
+	    if (( flag <= 2 )); then
 		STATE=$STATE_WARN
 		flag=2
 	    fi
-	elif (( ${VOLTAGE[$counter]} <= $warning_up )); then
-	    if (( $flag <= 0 )); then
+	elif (( v <= warning_up )); then
+	    if (( flag <= 0 )); then
 		STATE=$STATE_OK
 	    fi
 	else
-	    if (( $flag <= 1 )); then
+	    if (( flag <= 1 )); then
 		STATE=$STATE_UNK
 		flag=1
 	    fi
 	fi
 
-	OUTPUT=$OUTPUT" L$counter=${VOLTAGE[$counter]}V"
-	PERFDATA="${PERFDATA}L$counter=${VOLTAGE[$counter]};$WARNING;$CRITICAL;; "
-	counter=$(($counter + 1))
+	OUTPUT=$OUTPUT" L$counter=${v}V"
+	PERFDATA="${PERFDATA}L$counter=${v};$WARNING;$CRITICAL;; "
+	counter=$((counter + 1))
 
     done
 }
 
 CheckBatteryStatus() {
-    get_snmp $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator
+    get_snmp_numeric $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator
     case "$RESULT_TEXT" in
 	1)	OUTPUT="Battery Status Unknown."
 		STATE=$STATE_UNK; return
@@ -740,22 +720,22 @@ CheckBatteryCharge() {
 	exit $STATE_UNK
     fi
 
-    get_snmp $OID_upsEstimatedChargeRemaining
-    local percent_charge="$RESULT_TEXT"
+    get_snmp_numeric $OID_upsEstimatedChargeRemaining
+    local -i percent_charge="$RESULT_TEXT"
 
-    get_snmp $OID_upsEstimatedMinutesRemaining
-    local battery_charge="$RESULT_TEXT"
+    get_snmp_numeric $OID_upsEstimatedMinutesRemaining
+    local -i battery_charge="$RESULT_TEXT"
 
-    local value_secs=$(($battery_charge * 60))
+    local value_secs=$((battery_charge * 60))
 
     OUTPUT="Estimated battery charge $percent_charge%, approximately $battery_charge minutes runtime remaining."
     PERFDATA="charge=${percent_charge}%;$WARNING;$CRITICAL;; time_to_depleted=${value_secs}s;;;0;"
 
-    if (( $percent_charge <= $CRITICAL )); then
+    if (( percent_charge <= $CRITICAL )); then
 	STATE=$STATE_CRIT
-    elif (( $percent_charge <= $WARNING )); then
+    elif (( percent_charge <= $WARNING )); then
 	STATE=$STATE_WARN
-    elif (( $percent_charge > $WARNING )); then
+    elif (( percent_charge > $WARNING )); then
 	STATE=$STATE_OK
     else
 	STATE=$STATE_UNK
@@ -781,6 +761,17 @@ get_snmp() {
     done
 
     echo "Plugin $APPNAME failure - snmpget command error. ${RESULT_TEXT//\"}"
+    exit $STATE_UNK
+}
+
+get_snmp_numeric() {
+    get_snmp "$@"
+    local -i result_number="$RESULT_TEXT"
+    if [[ "$result_number" == "$RESULT_TEXT" ]]; then
+	return 0
+    fi
+
+    echo "Plugin $APPNAME failure - snmpget result not numberic: $RESULT_TEXT"
     exit $STATE_UNK
 }
 
