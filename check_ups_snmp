@@ -678,7 +678,7 @@ CheckInputVoltage() {
 }
 
 CheckBatteryStatus() {
-    get_snmp_numeric_positive $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator
+    get_snmp_numeric_positive $OID_upsBatteryStatus
     case "$RESULT_TEXT" in
 	1)	OUTPUT="Battery Status Unknown."
 		STATE=$STATE_UNK; return
