@@ -400,13 +400,13 @@ CheckSelfTest() {
 }
 
 CheckInputLines() {
-    get_snmp_numeric $OID_upsInputNumLines
+    get_snmp_numeric_positive $OID_upsInputNumLines
     OUTPUT="Number of input lines = $RESULT_TEXT"
     PERFDATA="lines=$RESULT_TEXT"
 }
 
 CheckOutputLines() {
-    get_snmp_numeric $OID_upsOutputNumLines
+    get_snmp_numeric_positive $OID_upsOutputNumLines
     OUTPUT="Number of output lines = $RESULT_TEXT"
     PERFDATA="lines=$RESULT_TEXT"
 }
@@ -462,12 +462,12 @@ CheckAmbientTemp() {
     get_snmp $OID_iemStatusProbeName
     local probe_name="$RESULT_TEXT"
 
-    get_snmp_numeric $OID_iemStatusProbeCurrentTemp
+    get_snmp_numeric_positive $OID_iemStatusProbeCurrentTemp
     local -i ambient_temp="$RESULT_TEXT"
     #temp_fahrenheit=$((9 * $ambient_temp / 5 + 32))
     local temp_fahrenheit=$( <<<"scale=1;9*$ambient_temp/5+32" bc -l )
 
-    get_snmp_numeric $OID_iemStatusProbeCurrentHumid
+    get_snmp_numeric_positive $OID_iemStatusProbeCurrentHumid
     local -i humidity_value="$RESULT_TEXT"
 
     OUTPUT="$probe_name: $ambient_temp degrees C ($temp_fahrenheit degrees F), $humidity_value % humidity."
@@ -490,7 +490,7 @@ CheckBatteryTemp() {
 	exit $STATE_UNK
     fi
 
-    get_snmp_numeric $OID_upsBatteryTemperature
+    get_snmp_numeric_positive $OID_upsBatteryTemperature
     local -i battery_temp="$RESULT_TEXT"
     #	temp_fahrenheit=$((9 * battery_temp / 5 + 32))
     local temp_fahrenheit=$( <<<"scale=1;9*$battery_temp/5+32" bc -l)
@@ -518,19 +518,14 @@ CheckOutputLoad() {
 	exit $STATE_UNK
     fi
 
-    get_snmp_numeric $OID_upsOutputNumLines
+    get_snmp_numeric_positive $OID_upsOutputNumLines
     local -i number_lines="$RESULT_TEXT"
-
-    if (( number_lines <= 0 )); then
-	echo "Error! Number of lines=$number_lines"
-	exit $STATE_UNK
-    fi
 
     local -i counter=1
     local -a percent_load
 
     while (( counter <= number_lines )); do
-	get_snmp_numeric $OID_upsOutputPercentLoad.$counter
+	get_snmp_numeric_positive $OID_upsOutputPercentLoad.$counter
 	percent_load[$counter]="$RESULT_TEXT"
 
 	counter=$((counter + 1))
@@ -574,13 +569,8 @@ CheckOutputLoadDiff() {
 	exit $STATE_UNK
     fi
 
-    get_snmp_numeric $OID_upsOutputNumLines
+    get_snmp_numeric_positive $OID_upsOutputNumLines
     local -i number_lines="$RESULT_TEXT"
-
-    if (( number_lines <= 0 )); then
-	echo "Error! Number of lines=$number_lines"
-	exit $STATE_UNK
-    fi
 
     local -i counter=1
 
@@ -591,7 +581,7 @@ CheckOutputLoadDiff() {
     local -i line_percent_load
 
     while (( counter <= number_lines )); do
-	get_snmp_numeric $OID_upsOutputPercentLoad.$counter
+	get_snmp_numeric_positive $OID_upsOutputPercentLoad.$counter
 	line_percent_load="$RESULT_TEXT"
 
 	if [[ -z "$min" ]] || (( "$min" > line_percent_load )); then
@@ -630,13 +620,8 @@ CheckInputVoltage() {
 	exit $STATE_UNK
     fi
 
-    get_snmp_numeric $OID_upsInputNumLines
+    get_snmp_numeric_positive $OID_upsInputNumLines
     local -i number_lines="$RESULT_TEXT"
-
-    if (( number_lines <= 0 )); then
-	echo "Error! Number of lines=$number_lines"
-	exit $STATE_UNK
-    fi
 
     local -i counter=1
     local -a voltage
@@ -693,7 +678,7 @@ CheckInputVoltage() {
 }
 
 CheckBatteryStatus() {
-    get_snmp_numeric $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator
+    get_snmp_numeric_positive $OID_upsBatteryStatus $OID_upsAdvBatteryReplaceIndicator
     case "$RESULT_TEXT" in
 	1)	OUTPUT="Battery Status Unknown."
 		STATE=$STATE_UNK; return
