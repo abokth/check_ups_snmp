@@ -348,19 +348,19 @@ OID_iemStatusProbeCurrentHumid='1.3.6.1.4.1.318.1.1.10.2.3.2.1.6.1'
 
 
 CheckAssetInfo() {
-    #get_snmp $OID_upsIdentManufacturer
+    #get_snmp $OID_upsIdentManufacturer "upsIdentManufacturer"
     #local make="$RESULT_TEXT"
 
-    get_snmp $OID_upsIdentModel
+    get_snmp $OID_upsIdentModel "upsIdentModel"
     local model="$RESULT_TEXT"
 
-    #get_snmp $OID_upsIdentUPSSoftwareVersion
+    #get_snmp $OID_upsIdentUPSSoftwareVersion "upsIdentUPSSoftwareVersion"
     #local firmware="$RESULT_TEXT"
 
-    get_snmp $OID_upsAdvIdentSerialNumber
+    get_snmp $OID_upsAdvIdentSerialNumber "upsAdvIdentSerialNumber"
     local serial_num="$RESULT_TEXT"
 
-    get_snmp $OID_upsBasicIdentModel
+    get_snmp $OID_upsBasicIdentModel "upsBasicIdentModel"
     local product="$RESULT_TEXT"
 
     #!!! How to get firmware to handle the spaces / special characters???
@@ -374,10 +374,10 @@ CheckAssetInfo() {
 }
 
 CheckSelfTest() {
-    get_snmp $OID_upsTestDate
+    get_snmp $OID_upsTestDate "upsTestDate"
     local test_date="$RESULT_TEXT"
 
-    get_snmp_numeric $OID_upsTestResult
+    get_snmp_numeric $OID_upsTestResult "upsTestResult"
     PERFDATA="test_result=$RESULT_TEXT"
 
     case $RESULT_TEXT in
@@ -400,13 +400,13 @@ CheckSelfTest() {
 }
 
 CheckInputLines() {
-    get_snmp_numeric_positive $OID_upsInputNumLines
+    get_snmp_numeric_positive $OID_upsInputNumLines "upsInputNumLines"
     OUTPUT="Number of input lines = $RESULT_TEXT"
     PERFDATA="lines=$RESULT_TEXT"
 }
 
 CheckOutputLines() {
-    get_snmp_numeric_positive $OID_upsOutputNumLines
+    get_snmp_numeric_positive $OID_upsOutputNumLines "upsOutputNumLines"
     OUTPUT="Number of output lines = $RESULT_TEXT"
     PERFDATA="lines=$RESULT_TEXT"
 }
@@ -417,7 +417,7 @@ CheckUPSAlarm() {
     local oid_alarm_desc alarm_time
     local -i counter
 
-    get_snmp_numeric $OID_upsAlarmsPresent
+    get_snmp_numeric $OID_upsAlarmsPresent "upsAlarmsPresent"
     local -i number_alarms="$RESULT_TEXT"
 
     if (( number_alarms == 0 )); then
@@ -428,7 +428,7 @@ CheckUPSAlarm() {
 
 	counter=1
 	while (( counter <= number_alarms )); do
-	    get_snmp $OID_upsAlarmDescr.$counter
+	    get_snmp $OID_upsAlarmDescr.$counter "upsAlarmDescr"
 	    oid_alarm_desc="$RESULT_TEXT"
 
 	    alarm_desc=$(snmptranslate -M $MIBS_PATH -m ALL $oid_alarm_desc | awk -F:: '{print $2}') || alarm_desc=""
@@ -436,7 +436,7 @@ CheckUPSAlarm() {
 		alarm_desc=$oid_alarm_desc
 	    fi
 
-	    get_snmp $OID_upsAlarmTime.$counter
+	    get_snmp $OID_upsAlarmTime.$counter "upsAlarmTime"
 	    alarm_time="$RESULT_TEXT"
 
 	    # work on checking return codes and use if/then so output fits what's available
@@ -459,15 +459,15 @@ CheckAmbientTemp() {
 	exit $STATE_UNK
     fi
 
-    get_snmp $OID_iemStatusProbeName
+    get_snmp $OID_iemStatusProbeName "iemStatusProbeName"
     local probe_name="$RESULT_TEXT"
 
-    get_snmp_numeric_positive $OID_iemStatusProbeCurrentTemp
+    get_snmp_numeric_positive $OID_iemStatusProbeCurrentTemp "iemStatusProbeCurrentTemp"
     local -i ambient_temp="$RESULT_TEXT"
     #temp_fahrenheit=$((9 * $ambient_temp / 5 + 32))
     local temp_fahrenheit=$( <<<"scale=1;9*$ambient_temp/5+32" bc -l )
 
-    get_snmp_numeric_positive $OID_iemStatusProbeCurrentHumid
+    get_snmp_numeric_positive $OID_iemStatusProbeCurrentHumid "iemStatusProbeCurrentHumid"
     local -i humidity_value="$RESULT_TEXT"
 
     OUTPUT="$probe_name: $ambient_temp degrees C ($temp_fahrenheit degrees F), $humidity_value % humidity."
@@ -490,7 +490,7 @@ CheckBatteryTemp() {
 	exit $STATE_UNK
     fi
 
-    get_snmp_numeric_positive $OID_upsBatteryTemperature
+    get_snmp_numeric_positive $OID_upsBatteryTemperature "upsBatteryTemperature"
     local -i battery_temp="$RESULT_TEXT"
     #	temp_fahrenheit=$((9 * battery_temp / 5 + 32))
     local temp_fahrenheit=$( <<<"scale=1;9*$battery_temp/5+32" bc -l)
@@ -518,14 +518,14 @@ CheckOutputLoad() {
 	exit $STATE_UNK
     fi
 
-    get_snmp_numeric_positive $OID_upsOutputNumLines
+    get_snmp_numeric_positive $OID_upsOutputNumLines "upsOutputNumLines"
     local -i number_lines="$RESULT_TEXT"
 
     local -i counter=1
     local -a percent_load
 
     while (( counter <= number_lines )); do
-	get_snmp_numeric_positive $OID_upsOutputPercentLoad.$counter
+	get_snmp_numeric_positive $OID_upsOutputPercentLoad.$counter "upsOutputPercentLoad"
 	percent_load[$counter]="$RESULT_TEXT"
 
 	counter=$((counter + 1))
@@ -569,7 +569,7 @@ CheckOutputLoadDiff() {
 	exit $STATE_UNK
     fi
 
-    get_snmp_numeric_positive $OID_upsOutputNumLines
+    get_snmp_numeric_positive $OID_upsOutputNumLines "upsOutputNumLines"
     local -i number_lines="$RESULT_TEXT"
 
     local -i counter=1
@@ -581,7 +581,7 @@ CheckOutputLoadDiff() {
     local -i line_percent_load
 
     while (( counter <= number_lines )); do
-	get_snmp_numeric_positive $OID_upsOutputPercentLoad.$counter
+	get_snmp_numeric_positive $OID_upsOutputPercentLoad.$counter "upsOutputPercentLoad"
 	line_percent_load="$RESULT_TEXT"
 
 	if [[ -z "$min" ]] || (( "$min" > line_percent_load )); then
@@ -620,14 +620,14 @@ CheckInputVoltage() {
 	exit $STATE_UNK
     fi
 
-    get_snmp_numeric_positive $OID_upsInputNumLines
+    get_snmp_numeric_positive $OID_upsInputNumLines "upsInputNumLines"
     local -i number_lines="$RESULT_TEXT"
 
     local -i counter=1
     local -a voltage
 
     while (( counter <= number_lines )); do
-	get_snmp_numeric $OID_upsInputVoltage.$counter
+	get_snmp_numeric $OID_upsInputVoltage.$counter "upsInputVoltage"
 	voltage[$counter]="$RESULT_TEXT"
 
 	counter=$((counter + 1))
@@ -678,7 +678,7 @@ CheckInputVoltage() {
 }
 
 CheckBatteryStatus() {
-    get_snmp_numeric_positive $OID_upsBatteryStatus
+    get_snmp_numeric_positive $OID_upsBatteryStatus "upsBatteryStatus"
     case "$RESULT_TEXT" in
 	1)	OUTPUT="Battery Status Unknown."
 		STATE=$STATE_UNK; return
@@ -705,10 +705,10 @@ CheckBatteryCharge() {
 	exit $STATE_UNK
     fi
 
-    get_snmp_numeric $OID_upsEstimatedChargeRemaining
+    get_snmp_numeric $OID_upsEstimatedChargeRemaining "upsEstimatedChargeRemaining"
     local -i percent_charge="$RESULT_TEXT"
 
-    get_snmp_numeric $OID_upsEstimatedMinutesRemaining
+    get_snmp_numeric $OID_upsEstimatedMinutesRemaining "upsEstimatedMinutesRemaining"
     local -i battery_charge="$RESULT_TEXT"
 
     local value_secs=$((battery_charge * 60))
@@ -745,7 +745,7 @@ get_snmp() {
 	fi
     done
 
-    echo "Plugin $APPNAME failure - snmpget command error. ${RESULT_TEXT//\"}"
+    echo "$APPNAME: SNMP GET $2 failed: ${RESULT_TEXT//\"}"
     exit $STATE_UNK
 }
 
@@ -756,7 +756,7 @@ get_snmp_numeric() {
 	return 0
     fi
 
-    echo "Plugin $APPNAME failure - snmpget result not numeric: $RESULT_TEXT"
+    echo "$APPNAME: SNMP GET $2 result not numeric: ${RESULT_TEXT//\"}"
     exit $STATE_UNK
 }
 
@@ -770,7 +770,8 @@ get_snmp_numeric_positive() {
 	fi
 	sleep $try
     done
-    echo "Plugin $APPNAME failure - snmpget result not a positive number: $RESULT_TEXT"
+
+    echo "$APPNAME: SNMP GET $2 result not a positive number: ${RESULT_TEXT//\"}"
     exit $STATE_UNK
 done
 
