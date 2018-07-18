@@ -377,7 +377,7 @@ CheckSelfTest() {
     get_snmp $OID_upsTestDate
     local test_date="$RESULT_TEXT"
 
-    get_snmp_numneric $OID_upsTestResult
+    get_snmp_numeric $OID_upsTestResult
     PERFDATA="test_result=$RESULT_TEXT"
 
     case $RESULT_TEXT in
