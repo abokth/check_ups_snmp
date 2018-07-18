@@ -773,7 +773,7 @@ get_snmp_numeric_positive() {
 
     echo "$APPNAME: SNMP GET $2 result not a positive number: ${RESULT_TEXT//\"}"
     exit $STATE_UNK
-done
+}
 
 ## MAIN PROGRAM CODE ##
 
