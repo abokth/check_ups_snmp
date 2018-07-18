@@ -771,9 +771,23 @@ get_snmp_numeric() {
 	return 0
     fi
 
-    echo "Plugin $APPNAME failure - snmpget result not numberic: $RESULT_TEXT"
+    echo "Plugin $APPNAME failure - snmpget result not numeric: $RESULT_TEXT"
     exit $STATE_UNK
 }
+
+get_snmp_numeric_positive() {
+    local -i result_number try
+    for try in 1 5 10 20 0; do
+	get_snmp_numeric "$@"
+	result_number="$RESULT_TEXT"
+	if (( result_number > 0 )); then
+	    return 0
+	fi
+	sleep $try
+    done
+    echo "Plugin $APPNAME failure - snmpget result not a positive number: $RESULT_TEXT"
+    exit $STATE_UNK
+done
 
 ## MAIN PROGRAM CODE ##
 
